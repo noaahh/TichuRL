@@ -28,7 +28,7 @@ class Env():
 
         return next_state, player_id
 
-    def run(self, is_training=False):
+    def run(self):
         trajectories = [[] for _ in range(self.player_num)]
         state, player_id = self.init_game()
         return_hand = self.game.get_state(0)['hand']  # for handValue

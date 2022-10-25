@@ -86,8 +86,8 @@ class Cards():
             remain = self.size
             iter_num = 0
 
-            print(f"  Card value: {self.value}, Type: {self.type}, Remaining: {remain}")
-            return
+            #print(f"  Card value: {self.value}, Type: {self.type}, Remaining: {remain}")
+            #return
 
             while remain > 0:
                 if remain < self.num_show + 1:
