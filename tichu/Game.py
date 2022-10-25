@@ -1,11 +1,10 @@
-
-from tichu.Card import Card, Cards, Deck
+from tichu.Card import Card, Deck
 from tichu.Player import Player
-from tichu.Util import Deal
 from tichu.Round import Round
+from tichu.Util import Deal
 
-class Game():
 
+class Game:
     def __init__(self, num_players=4):
         self.num_players = num_players
 

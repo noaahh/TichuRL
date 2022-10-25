@@ -67,6 +67,7 @@ class Env():
             trajectories[player_id].append(state)
 
         R = self.game.get_points()
+        print(f"Points: {R}")
         trajectories = reorganize(trajectories, R)
 
         return trajectories, R
