@@ -22,7 +22,7 @@ class Round():
             self.num_pass = 0
             if player.play_cards(action, self.ground, len(self.out_player)):
                 self.out_now.append(self.current_player)
-        
+
         self.current_player = (self.current_player + 1) % self.num_players
         while self.out_player.count(self.current_player) == 1 or self.out_now.count(self.current_player) == 1:
             if self.out_now.count(self.current_player) == 1:
@@ -45,13 +45,13 @@ class Round():
         state['hand'] = player.hand
         state['ground'] = self.ground
         state['action'] = player.hand.get_available_combination()
-        state['legal_actions'] = get_legal_combination( state['action'], self.ground )
+        state['legal_actions'] = get_legal_combination(state['action'], self.ground)
         state['card_num'] = []
         for player in players:
             state['card_num'].append(player.hand.size)
         state['used'] = self.used
         return state
-        
+
     def is_over(self):
         return self.num_pass >= 3 - len(self.out_player)
 

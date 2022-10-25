@@ -1,7 +1,7 @@
 import time
+
 import numpy as np
 
-from tichu.Card import Card
 from tichu.Game import Game
 from tichu.Util import reorganize
 
@@ -31,7 +31,7 @@ class Env():
     def run(self, is_training=False):
         trajectories = [[] for _ in range(self.player_num)]
         state, player_id = self.init_game()
-        return_hand = self.game.get_state(0)['hand'] # for handValue
+        return_hand = self.game.get_state(0)['hand']  # for handValue
 
         if self.verbose:
             print("Your hand (player0) ")
@@ -41,9 +41,9 @@ class Env():
 
         trajectories[player_id].append(state)
         while not self.is_over():
-#            if player_id == 0:
-#                for i in state['legal_actions']:
-#                    i.show()
+            #            if player_id == 0:
+            #                for i in state['legal_actions']:
+            #                    i.show()
             action = self.agents[player_id].step(state)
             trajectories[player_id].append(action)
 

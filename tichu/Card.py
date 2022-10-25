@@ -1,23 +1,21 @@
-import copy
+SUITS = {'Spade': '♠',
+         'Heart': '♡',
+         'Dia': '♢',
+         'Club': '♣'}
 
-SUITS = {'Spade':'♠',
-         'Heart':'♡',
-         'Dia':'♢',
-         'Club':'♣'}
-
-CARD_VALUES = {'2':2,
-               '3':3,
-               '4':4,
-               '5':5,
-               '6':6,
-               '7':7,
-               '8':8,
-               '9':9,
-               '10':10,
-               'J':11,
-               'Q':12,
-               'K':13,
-               'A':14}
+CARD_VALUES = {'2': 2,
+               '3': 3,
+               '4': 4,
+               '5': 5,
+               '6': 6,
+               '7': 7,
+               '8': 8,
+               '9': 9,
+               '10': 10,
+               'J': 11,
+               'Q': 12,
+               'K': 13,
+               'A': 14}
 
 
 class Card():
@@ -34,9 +32,11 @@ class Card():
             self.point = 10
 
         if name != '10':
-            self.image = ['┌┄┄┄┑', '┆'+self.name+'  ┆', '┆ '+SUITS[self.suit]+' ┆', '┆  '+self.name+'┆', '┕┄┄┄┙']
+            self.image = ['┌┄┄┄┑', '┆' + self.name + '  ┆', '┆ ' + SUITS[self.suit] + ' ┆', '┆  ' + self.name + '┆',
+                          '┕┄┄┄┙']
         else:
-            self.image = ['┌┄┄┄┑', '┆'+self.name+' ┆', '┆ '+SUITS[self.suit]+' ┆', '┆ '+self.name+'┆', '┕┄┄┄┙']
+            self.image = ['┌┄┄┄┑', '┆' + self.name + ' ┆', '┆ ' + SUITS[self.suit] + ' ┆', '┆ ' + self.name + '┆',
+                          '┕┄┄┄┙']
 
     def __ge__(self, other):
         return self.value >= other.value
@@ -64,7 +64,7 @@ class Card():
 
 
 class Cards():
-    
+
     def __init__(self, card_list=None, value=0, ctype='none'):
         if card_list != None:
             self.cards = list()
@@ -93,13 +93,13 @@ class Cards():
                 if remain < self.num_show + 1:
                     for i in range(5):
                         for j in range(remain):
-                            print(self.cards[iter_num*self.num_show + j].image[i],end='')
+                            print(self.cards[iter_num * self.num_show + j].image[i], end='')
                         print()
                     remain = 0
                 else:
                     for i in range(5):
                         for j in range(self.num_show):
-                            print(self.cards[iter_num*self.num_show + j].image[i],end='')
+                            print(self.cards[iter_num * self.num_show + j].image[i], end='')
                         print()
                     remain = remain - self.num_show
                     iter_num = iter_num + 1
@@ -119,7 +119,7 @@ class Cards():
             self.type = 'solo'
             self.value = card_set[0].value
             return
-        
+
         ### pair
         if len(card_set) == 2 and card_set[0].value == card_set[1].value:
             self.type = 'pair'
@@ -133,17 +133,20 @@ class Cards():
             return
 
         ### four
-        if len(card_set) == 4 and card_set[0].value == card_set[1].value and card_set[1].value == card_set[2].value and card_set[2].value == card_set[3].value:
+        if len(card_set) == 4 and card_set[0].value == card_set[1].value and card_set[1].value == card_set[2].value and \
+                card_set[2].value == card_set[3].value:
             self.type = 'four'
             self.value = card_set[0].value
             return
 
         ### full
-        if len(card_set) == 5 and card_set[0].value == card_set[1].value and card_set[1].value == card_set[2].value and card_set[3].value == card_set[4].value:
+        if len(card_set) == 5 and card_set[0].value == card_set[1].value and card_set[1].value == card_set[2].value and \
+                card_set[3].value == card_set[4].value:
             self.type = 'full'
             self.value = card_set[0].value
             return
-        if len(card_set) == 5 and card_set[0].value == card_set[1].value and card_set[2].value == card_set[3].value and card_set[3].value == card_set[4].value:
+        if len(card_set) == 5 and card_set[0].value == card_set[1].value and card_set[2].value == card_set[3].value and \
+                card_set[3].value == card_set[4].value:
             self.type = 'full'
             self.value = card_set[2].value
             return
@@ -152,9 +155,9 @@ class Cards():
         if len(card_set) >= 5:
             strat = True
             flush = True
-            for i in range(len(card_set)-1):
-                if card_set[i].value + 1 == card_set[i+1].value:
-                    if card_set[i].suit == card_set[i+1].suit:
+            for i in range(len(card_set) - 1):
+                if card_set[i].value + 1 == card_set[i + 1].value:
+                    if card_set[i].suit == card_set[i + 1].suit:
                         pass
                     else:
                         flush = False
@@ -175,10 +178,10 @@ class Cards():
         ### pair_seq
         if len(card_set) >= 4 and len(card_set) % 2 == 0:
             pair_seq = True
-            for i in range(len(card_set)-1):
-                if i % 2 == 0 and card_set[i].value == card_set[i+1].value:
+            for i in range(len(card_set) - 1):
+                if i % 2 == 0 and card_set[i].value == card_set[i + 1].value:
                     pass
-                elif i % 2 == 1 and card_set[i].value + 1 == card_set[i+1].value:
+                elif i % 2 == 1 and card_set[i].value + 1 == card_set[i + 1].value:
                     pass
                 else:
                     pair_seq = False
@@ -195,7 +198,7 @@ class Cards():
     def get_available_combination(self):
         hand_l = self.cards
         hand_l.sort()
-        
+
         solo = list()
         pair = list()
         triple = list()
@@ -207,68 +210,77 @@ class Cards():
 
         ### solo
         for i in range(len(hand_l)):
-            solo.append( Cards(card_list=[hand_l[i]], value=hand_l[i].value, ctype='solo' ))
+            solo.append(Cards(card_list=[hand_l[i]], value=hand_l[i].value, ctype='solo'))
 
         ### pair
-        for i in range(len(hand_l)-1):
-            if hand_l[i].value == hand_l[i+1].value:
-                pair.append( Cards(card_list=[hand_l[i], hand_l[i+1]], value=hand_l[i].value, ctype='pair' ))
+        for i in range(len(hand_l) - 1):
+            if hand_l[i].value == hand_l[i + 1].value:
+                pair.append(Cards(card_list=[hand_l[i], hand_l[i + 1]], value=hand_l[i].value, ctype='pair'))
             try:
-                if hand_l[i].value == hand_l[i+2].value:
-                    pair.append( Cards(card_list=[hand_l[i], hand_l[i+2]], value=hand_l[i].value, ctype='pair' ))
-                if hand_l[i].value == hand_l[i+3].value:
-                    pair.append( Cards(card_list=[hand_l[i], hand_l[i+3]], value=hand_l[i].value, ctype='pair' ))
+                if hand_l[i].value == hand_l[i + 2].value:
+                    pair.append(Cards(card_list=[hand_l[i], hand_l[i + 2]], value=hand_l[i].value, ctype='pair'))
+                if hand_l[i].value == hand_l[i + 3].value:
+                    pair.append(Cards(card_list=[hand_l[i], hand_l[i + 3]], value=hand_l[i].value, ctype='pair'))
             except:
                 pass
 
-
         ### triple
-        for i in range(len(hand_l)-2):
-            if hand_l[i].value == hand_l[i+1].value and hand_l[i+1].value == hand_l[i+2].value:
-                triple.append( Cards(card_list=[hand_l[i], hand_l[i+1], hand_l[i+2]], value=hand_l[i].value, ctype='triple' ))
+        for i in range(len(hand_l) - 2):
+            if hand_l[i].value == hand_l[i + 1].value and hand_l[i + 1].value == hand_l[i + 2].value:
+                triple.append(
+                    Cards(card_list=[hand_l[i], hand_l[i + 1], hand_l[i + 2]], value=hand_l[i].value, ctype='triple'))
             try:
-                if hand_l[i].value == hand_l[i+1].value and hand_l[i+1].value == hand_l[i+3].value:
-                    triple.append( Cards(card_list=[hand_l[i], hand_l[i+1], hand_l[i+3]], value=hand_l[i].value, ctype='triple' ))
-                if hand_l[i].value == hand_l[i+2].value and hand_l[i+2].value == hand_l[i+3].value:
-                    triple.append( Cards(card_list=[hand_l[i], hand_l[i+2], hand_l[i+3]], value=hand_l[i].value, ctype='triple' ))
+                if hand_l[i].value == hand_l[i + 1].value and hand_l[i + 1].value == hand_l[i + 3].value:
+                    triple.append(Cards(card_list=[hand_l[i], hand_l[i + 1], hand_l[i + 3]], value=hand_l[i].value,
+                                        ctype='triple'))
+                if hand_l[i].value == hand_l[i + 2].value and hand_l[i + 2].value == hand_l[i + 3].value:
+                    triple.append(Cards(card_list=[hand_l[i], hand_l[i + 2], hand_l[i + 3]], value=hand_l[i].value,
+                                        ctype='triple'))
             except:
                 pass
 
         ### four card (bomb)
-        for i in range(len(hand_l)-3):
-            if hand_l[i].value == hand_l[i+1].value and hand_l[i+1].value == hand_l[i+2].value and hand_l[i+2].value == hand_l[i+3].value:
-                four.append( Cards(card_list=[hand_l[i], hand_l[i+1], hand_l[i+2], hand_l[i+3]], value=hand_l[i].value, ctype='four'))
+        for i in range(len(hand_l) - 3):
+            if hand_l[i].value == hand_l[i + 1].value and hand_l[i + 1].value == hand_l[i + 2].value and hand_l[
+                i + 2].value == hand_l[i + 3].value:
+                four.append(
+                    Cards(card_list=[hand_l[i], hand_l[i + 1], hand_l[i + 2], hand_l[i + 3]], value=hand_l[i].value,
+                          ctype='four'))
 
         ### full house
         for i in pair:
             for j in triple:
                 if i.value != j.value:
-                    full.append( Cards(card_list=i.cards+j.cards, value=j.value, ctype='full'))
+                    full.append(Cards(card_list=i.cards + j.cards, value=j.value, ctype='full'))
 
         ### straight
-        for i in range(len(hand_l)-4):
+        for i in range(len(hand_l) - 4):
             set_cards = list()
             set_cards.append(list())
             set_cards[0].append(hand_l[i])
             j = i
             while True:
-                if hand_l[j].value == hand_l[j+1].value:
+                if hand_l[j].value == hand_l[j + 1].value:
                     if len(set_cards[0]) != 1:
                         set_num = len(set_cards)
                         set_cards.append(list())
-                        set_cards[set_num] = set_cards[set_num-1][:]
+                        set_cards[set_num] = set_cards[set_num - 1][:]
                         set_cards[set_num].pop()
-                        set_cards[set_num].append(hand_l[j+1])
+                        set_cards[set_num].append(hand_l[j + 1])
                         if len(set_cards[0]) > 4:
-#                            strat.append( Cards(card_list=copy.deepcopy(set_cards[set_num]), value=int(len(set_cards[set_num-1])*1000 + hand_l[i].value), ctype='strat'))
-                            strat.append( Cards(card_list=set_cards[set_num], value=int(len(set_cards[set_num-1])*100 + hand_l[i].value), ctype='strat'))
-                elif hand_l[j].value+1 == hand_l[j+1].value:
+                            #                            strat.append( Cards(card_list=copy.deepcopy(set_cards[set_num]), value=int(len(set_cards[set_num-1])*1000 + hand_l[i].value), ctype='strat'))
+                            strat.append(Cards(card_list=set_cards[set_num],
+                                               value=int(len(set_cards[set_num - 1]) * 100 + hand_l[i].value),
+                                               ctype='strat'))
+                elif hand_l[j].value + 1 == hand_l[j + 1].value:
                     for k in range(len(set_cards)):
-                        set_cards[k].append(hand_l[j+1])
+                        set_cards[k].append(hand_l[j + 1])
                     if len(set_cards[0]) > 4:
                         for k in range(len(set_cards)):
-#                            strat.append( Cards(card_list=copy.deepcopy(set_cards[k]), value=int(len(set_cards[k])*1000 + hand_l[i].value), ctype='strat'))
-                            strat.append( Cards(card_list=set_cards[k], value=int(len(set_cards[k])*100 + hand_l[i].value), ctype='strat'))
+                            #                            strat.append( Cards(card_list=copy.deepcopy(set_cards[k]), value=int(len(set_cards[k])*1000 + hand_l[i].value), ctype='strat'))
+                            strat.append(
+                                Cards(card_list=set_cards[k], value=int(len(set_cards[k]) * 100 + hand_l[i].value),
+                                      ctype='strat'))
                 else:
                     break
                 if j < len(hand_l) - 2:
@@ -283,7 +295,7 @@ class Cards():
             check = 1
             for j in i.cards:
                 if suit == j.suit:
-                    pass    
+                    pass
                 else:
                     check = 0
                     break
@@ -295,27 +307,30 @@ class Cards():
                 strat_flush.append(cards)
         for i in remove_set:
             strat.remove(i)
- 
+
         ### pair sequence
-        for i in range(len(pair)-1):
+        for i in range(len(pair) - 1):
             set_pair = list()
             set_pair.append(list())
             set_pair[0] += pair[i].cards
             j = i
             while True:
-                if pair[j].value == pair[j+1].value:
-                    if len(set_pair[0]) !=  2:
+                if pair[j].value == pair[j + 1].value:
+                    if len(set_pair[0]) != 2:
                         set_num = len(set_pair)
                         set_pair.append(list())
-                        set_pair[set_num] = set_pair[set_num-1][:]
+                        set_pair[set_num] = set_pair[set_num - 1][:]
                         set_pair[set_num].remove(pair[j].cards[0])
                         set_pair[set_num].remove(pair[j].cards[1])
-                        set_pair[set_num] += pair[j+1].cards
-                        pair_seq.append( Cards(card_list=set_pair[set_num],value=int(len(set_pair[set_num])*100+pair[i].value),ctype='pair_seq'))
-                elif pair[j].value+1 == pair[j+1].value:
+                        set_pair[set_num] += pair[j + 1].cards
+                        pair_seq.append(
+                            Cards(card_list=set_pair[set_num], value=int(len(set_pair[set_num]) * 100 + pair[i].value),
+                                  ctype='pair_seq'))
+                elif pair[j].value + 1 == pair[j + 1].value:
                     for k in range(len(set_pair)):
-                        set_pair[k] += pair[j+1].cards
-                        pair_seq.append( Cards(card_list=set_pair[k],value=int(len(set_pair[k])*100+pair[i].value),ctype='pair_seq'))
+                        set_pair[k] += pair[j + 1].cards
+                        pair_seq.append(Cards(card_list=set_pair[k], value=int(len(set_pair[k]) * 100 + pair[i].value),
+                                              ctype='pair_seq'))
                 else:
                     break
                 if j < len(pair) - 2:
@@ -350,7 +365,7 @@ class Cards():
         new_cards.cards.sort()
         new_cards.size = len(self_set)
         return new_cards
-        
+
 
 class Deck(Cards):
 
@@ -362,6 +377,4 @@ class Deck(Cards):
 
         for i in suits:
             for j in names:
-                super(Deck, self).add( card = Card(j, i) )
-
-
+                super(Deck, self).add(card=Card(j, i))

@@ -1,5 +1,6 @@
 import random
 
+
 class Random():
 
     def step(self, state):

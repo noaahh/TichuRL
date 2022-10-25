@@ -1,7 +1,5 @@
-import random
+from tichu.Card import Cards
 
-from tichu.Card import Card, Cards
-from tichu.Util import get_legal_combination
 
 class Player:
 
@@ -39,4 +37,3 @@ class Player:
 
     def win(self, ground):
         self.won_card = self.won_card + ground.cards
-
