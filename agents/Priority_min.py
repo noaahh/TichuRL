@@ -1,3 +1,6 @@
+from tichu.GameState import GameState
+
+
 class Priority_min():
 
     def play(self, player):
@@ -5,13 +8,11 @@ class Priority_min():
         ### First player: Play high priority and min combination
         if player.ground.type == 'none':
             actions = player.action
-            print(actions)
-            for action in actions:
-                for card in action:
-                    card.show()
-
-
-
+            idx = 5
+            while idx >= 0:
+                if len(actions[idx]) > 0:
+                    return actions[idx][0]
+                idx -= 1
 
         ### Play min combination
         else:

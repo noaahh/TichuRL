@@ -46,7 +46,7 @@ class Env():
             #            if player_id == 0:
             #                for i in active_player['legal_actions']:
             #                    i.show()
-            print(active_player)
+
             action = self.agents[player_id].play(active_player)
             trajectories[player_id].append(action)
 

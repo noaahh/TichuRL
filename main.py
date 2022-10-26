@@ -10,7 +10,7 @@ env = Env(human=0, verbose=1)
 episode_num = 1
 
 ### Set up agents
-agent_0 = Human()
+agent_0 = Priority_min()
 agent_1 = Priority_min()
 agent_2 = Priority_min()
 agent_3 = Priority_min()
