@@ -3,7 +3,7 @@ import sys
 
 class Human():
 
-    def step(self, state):
+    def turn(self, state):
         print('\n')
         print('*** Card num [player1] ' + str(state['card_num'][1]) + ' [player2] ' + str(
             state['card_num'][2]) + ' [player3] ' + str(state['card_num'][3]))

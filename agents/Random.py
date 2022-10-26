@@ -3,5 +3,5 @@ import random
 
 class Random():
 
-    def step(self, state):
-        return random.choice(state['legal_actions'])
+    def play(self, player):
+        return random.choice(player.legal_actions)

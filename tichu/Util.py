@@ -113,8 +113,8 @@ def reorganize(trajectories, R):
                 min_card = 13
                 for j in range(player_num):
                     if j != player:
-                        min_card = min(trajectories[player][0]['card_num'][j], min_card)
-                reward = min_card - trajectories[player][0]['card_num'][player]
+                        min_card = min(trajectories[player][0].card_num[j], min_card)
+                reward = min_card - trajectories[player][0].card_num[player]
                 terminal = False
             transition = trajectories[player][i:i + 3].copy()
             transition.insert(2, reward)
@@ -155,7 +155,7 @@ def get_available_action_array(action_set, hand):
 
 
 def state_parse(state):
-    hand = state['hand']
+    hand = state.hand
     hand_state = np.zeros(26)
     for i in range(hand.size):
         hand_state[2 * i] = hand.cards[i].value
@@ -171,7 +171,7 @@ def state_parse(state):
             raise ValueError
 
     ground_state = np.zeros(3)
-    ground_type = state['ground'].type
+    ground_type = state.ground.type
     if ground_type == 'none':
         ground_state[0] = 0
     elif ground_type == 'solo':
@@ -192,20 +192,20 @@ def state_parse(state):
         ground_state[0] = 8
     else:
         raise ValueError
-    ground_state[1] = state['ground'].value
-    ground_state[2] = state['ground'].player_id
+    ground_state[1] = state.ground.value
+    ground_state[2] = state.ground.player_id
 
     card_state = np.zeros(3)
-    card_state[0] = state['card_num'][1]
-    card_state[1] = state['card_num'][2]
-    card_state[2] = state['card_num'][3]
+    card_state[0] = state.card_num[1]
+    card_state[1] = state.card_num[2]
+    card_state[2] = state.card_num[3]
 
     used = np.zeros(8)
-    state['used'].sort()
-    size = len(state['used'])
+    state.played_cards.sort()
+    size = len(state['played_cards'])
     if size >= 8:
         for i in range(8):
-            used[i] = state['used'][size - 1 - i].value
+            used[i] = state['played_cards'][size - 1 - i].value
 
     rt_state = np.concatenate((hand_state, ground_state, card_state, used), axis=None)
 

@@ -1,5 +1,6 @@
 from agents.Human import Human
 from agents.Random import Random
+from agents.Priority_min import  Priority_min
 from tichu.Env import Env
 
 ### Set environmets
@@ -10,9 +11,9 @@ episode_num = 1
 
 ### Set up agents
 agent_0 = Human()
-agent_1 = Random()
-agent_2 = Random()
-agent_3 = Random()
+agent_1 = Priority_min()
+agent_2 = Priority_min()
+agent_3 = Priority_min()
 env.set_agents([agent_0, agent_1, agent_2, agent_3])
 
 ### Run

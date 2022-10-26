@@ -9,19 +9,19 @@ class Game:
         self.num_players = num_players
 
     def init_game(self):
-        ### Initialize parameters
+        # Initialize parameters
         self.first_player = 0
 
-        ### Initialize deck
+        # Initialize deck
         self.deck = Deck()
 
-        ### Initialize players
+        # Initialize players
         self.players = list()
         for i in range(self.num_players):
             player = Player(player_id=i)
             self.players.append(player)
 
-        ### Deal cards
+        # Deal cards
         for i in range(self.num_players):
             self.deck, self.players[i].hand = Deal(self.deck, self.players[i].hand, deck=1, card_num=13)
 
@@ -33,17 +33,17 @@ class Game:
         #            self.deck, self.players[i].hand = Deal(self.deck, self.players[i].hand, deck=1, card_num=13)
         ###
 
-        ### Show hands and determine first player
+        # Show hands and determine first player
         for i in range(self.num_players):
             if self.players[i].hand.cards.count(Card('2', 'Club')) == 1:
                 self.first_player = i
 
-        ### Initialize round
+        # Initialize round
         self.round = Round(self.num_players, self.first_player)
 
         return self.round.get_state(self.players, self.first_player), self.first_player
 
-    def step(self, action):
+    def next_turn(self, action):
 
         self.round.proceed_round(self.players, action)
         next_player_id = self.round.current_player
@@ -51,7 +51,7 @@ class Game:
 
         return state, next_player_id
 
-    def get_state(self, player_id):
+    def get_active_player(self, player_id):
         return self.round.get_state(self.players, player_id)
 
     def is_over(self):

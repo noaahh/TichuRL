@@ -1,19 +1,21 @@
 class Priority_min():
 
-    def step(self, state):
+    def play(self, player):
 
         ### First player: Play high priority and min combination
-        if state['ground'].type == 'none':
-            actions = state['action']
-            idx = 5
-            while idx >= 0:
-                if len(actions[idx]) > 0:
-                    return actions[idx][0]
-                idx -= 1
+        if player.ground.type == 'none':
+            actions = player.action
+            print(actions)
+            for action in actions:
+                for card in action:
+                    card.show()
+
+
+
 
         ### Play min combination
         else:
-            actions = state['legal_actions']
+            actions = player.legal_actions
             try:
                 rt = actions[1]
                 return rt

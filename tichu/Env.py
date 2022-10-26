@@ -22,49 +22,52 @@ class Env():
     def set_agents(self, agents):
         self.agents = agents
 
-    def step(self, action):
+    def next_turn(self, action):
         self.timestep += 1
-        next_state, player_id = self.game.step(action)
+        next_player, player_id = self.game.next_turn(action)
 
-        return next_state, player_id
+        return next_player, player_id
 
     def run(self):
         trajectories = [[] for _ in range(self.player_num)]
-        state, player_id = self.init_game()
-        return_hand = self.game.get_state(0)['hand']  # for handValue
+        active_player, player_id = self.init_game()
+        return_hand = self.game.get_active_player(0).hand  # for handValue
 
         if self.verbose:
             print("Your hand (player0) ")
-            h_state = self.game.get_state(0)
-            h_state['hand'].show()
+            h_state = self.game.get_active_player(0)
+            h_state.hand.show()
             print("First player: " + str(player_id))
 
-        trajectories[player_id].append(state)
+        trajectories[player_id].append(active_player)
+
+        # While game is not over continue taking turns.
         while not self.is_over():
             #            if player_id == 0:
-            #                for i in state['legal_actions']:
+            #                for i in active_player['legal_actions']:
             #                    i.show()
-            action = self.agents[player_id].step(state)
+            print(active_player)
+            action = self.agents[player_id].play(active_player)
             trajectories[player_id].append(action)
 
             if self.verbose:
                 print("Player" + str(player_id))
                 action.show()
 
-            next_state, next_player_id = self.step(action)
+            next_player, next_player_id = self.next_turn(action)
 
-            state = next_state
+            active_player = next_player
             player_id = next_player_id
 
             if not self.is_over():
-                trajectories[player_id].append(state)
+                trajectories[player_id].append(active_player)
 
             if self.human:
                 time.sleep(1)
 
         for player_id in range(self.player_num):
-            state = self.get_state(player_id)
-            trajectories[player_id].append(state)
+            active_player = self.get_state(player_id)
+            trajectories[player_id].append(active_player)
 
         R = self.game.get_points()
         print(f"Points: {R}")
@@ -83,4 +86,4 @@ class Env():
         self.points += R
 
     def get_state(self, player_id):
-        return self.game.get_state(player_id)
+        return self.game.get_active_player(player_id)

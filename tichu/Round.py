@@ -1,3 +1,4 @@
+from tichu.GameState import GameState
 from tichu.Util import Ground
 from tichu.Util import get_legal_combination
 
@@ -40,16 +41,15 @@ class Round():
                 self.current_player = (self.current_player + 1) % self.num_players
 
     def get_state(self, players, player_id):
-        state = {}
+        state = GameState()
         player = players[player_id]
-        state['hand'] = player.hand
-        state['ground'] = self.ground
-        state['action'] = player.hand.get_available_combination()
-        state['legal_actions'] = get_legal_combination(state['action'], self.ground)
-        state['card_num'] = []
+        state.hand = player.hand
+        state.ground = self.ground
+        state.action = player.hand.get_available_combination()
+        state.legal_actions = get_legal_combination(state.action, self.ground)
         for player in players:
-            state['card_num'].append(player.hand.size)
-        state['used'] = self.used
+            state.card_num.append(player.hand.size)
+        state.played_cards = self.used
         return state
 
     def is_over(self):
