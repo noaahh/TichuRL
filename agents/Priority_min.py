@@ -1,10 +1,9 @@
-from tichu.GameState import GameState
-
-
-class Priority_min():
+class Priority_min:
+    def __init__(self, position):
+        self.position = position
+        self.strategy = "Priority_min"
 
     def play(self, player):
-
         ### First player: Play high priority and min combination
         if player.ground.type == 'none':
             actions = player.action

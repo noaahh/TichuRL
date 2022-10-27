@@ -1,14 +1,16 @@
 import time
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 from tichu.Game import Game
 from tichu.Util import reorganize
 
 
-class Env():
+class Env:
 
     def __init__(self, human=0, verbose=0):
+        self.agents = None
         self.human = human
         self.verbose = verbose
         self.game = Game()
@@ -17,6 +19,7 @@ class Env():
         self.state_shape = [1, 40]
         self.action_num = 8192
 
+        self.points_table = []
         self.timestep = 0
 
     def set_agents(self, agents):
@@ -27,6 +30,17 @@ class Env():
         next_player, player_id = self.game.next_turn(action)
 
         return next_player, player_id
+
+    def plot_points(self, agent):
+        agent_points = [n[agent.position] for n in self.points_table]
+        plt.scatter([i + 1 for i in range(len(agent_points))], agent_points)
+
+        print(f"Avg points agent {agent.position} (type: {agent.strategy}): {sum(agent_points) / len(agent_points)}")
+
+        plt.title(f'Points scored (Agent {agent})')
+        plt.xlabel('Iteration')
+        plt.ylabel('Points')
+        plt.show()
 
     def run(self):
         trajectories = [[] for _ in range(self.player_num)]
@@ -69,11 +83,14 @@ class Env():
             active_player = self.get_state(player_id)
             trajectories[player_id].append(active_player)
 
-        R = self.game.get_points()
-        print(f"Points: {R}")
-        trajectories = reorganize(trajectories, R)
+        game_points = self.game.get_points()
+        self.points_table.append(game_points)
 
-        return trajectories, R
+        if self.verbose:
+            print(f"Points: {game_points}")
+
+        trajectories = reorganize(trajectories, game_points)
+        return trajectories, game_points
 
     def is_over(self):
         return self.game.is_over()
@@ -82,8 +99,7 @@ class Env():
         return self.game.init_game()
 
     def get_points(self):
-        R = np.array(self.game.get_points())
-        self.points += R
+        self.points += np.array(self.game.get_points())
 
     def get_state(self, player_id):
         return self.game.get_active_player(player_id)

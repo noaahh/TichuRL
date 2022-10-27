@@ -1,7 +1,10 @@
 import sys
 
 
-class Human():
+class Human:
+    def __init__(self, position):
+        self.position = position
+        self.strategy = "Human"
 
     def play(self, play):
         print('\n')
