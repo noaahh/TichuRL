@@ -3,7 +3,7 @@ from agents.Random import Random
 from agents.Priority_min import  Priority_min
 from tichu.Env import Env
 
-env = Env(human=0, verbose=0)
+env = Env(verbose=False)
 
 agent_0 = Priority_min(position=0)
 agent_1 = Priority_min(position=1)

@@ -9,9 +9,8 @@ from tichu.Util import reorganize
 
 class Env:
 
-    def __init__(self, human=0, verbose=0):
+    def __init__(self, verbose=False):
         self.agents = None
-        self.human = human
         self.verbose = verbose
         self.game = Game()
         self.player_num = self.game.get_player_num()
@@ -75,9 +74,6 @@ class Env:
 
             if not self.is_over():
                 trajectories[player_id].append(active_player)
-
-            if self.human:
-                time.sleep(1)
 
         for player_id in range(self.player_num):
             active_player = self.get_state(player_id)
