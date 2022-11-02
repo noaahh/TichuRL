@@ -66,7 +66,7 @@ class Env():
             for i in self.game.players:
                 print(f"History for {i.player_id}: {i.accumulated_points}")
 
-        return [p.player_id for p in self.game.players], game_points, [p.accumulated_points for p in self.game.players]
+        return game_points, [p.accumulated_points for p in self.game.players]
 
     def is_over(self):
         return self.game.is_over()
