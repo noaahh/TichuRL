@@ -13,7 +13,7 @@ agents = [agent_0, agent_1, agent_2, agent_3]
 
 env.set_agents(agents)
 
-n = 10
+n = 1
 
 points = []
 
@@ -22,7 +22,7 @@ for i in range(n):
     if i % 1000 == 0:
         print(f"Iteration: {i}")
 
-    player_ids, game_points, accumulated_player_points = env.run()
+    game_points, accumulated_player_points = env.run()
     print(accumulated_player_points)
 
 print("Done")
