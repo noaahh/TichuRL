@@ -3,7 +3,6 @@ import time
 import numpy as np
 
 from tichu.Game import Game
-from tichu.Util import reorganize
 
 
 class Env():
@@ -29,7 +28,6 @@ class Env():
         return next_player, player_id
 
     def run(self):
-        trajectories = [[] for _ in range(self.player_num)]
         active_player, player_id = self.init_game()
         return_hand = self.game.get_active_player(0).hand  # for handValue
 
@@ -39,8 +37,6 @@ class Env():
             h_state.hand.show()
             print("First player: " + str(player_id))
 
-        trajectories[player_id].append(active_player)
-
         # While game is not over continue taking turns.
         while not self.is_over():
             #            if player_id == 0:
@@ -48,7 +44,6 @@ class Env():
             #                    i.show()
 
             action = self.agents[player_id].play(active_player)
-            trajectories[player_id].append(action)
 
             if self.verbose:
                 print("Player" + str(player_id))
@@ -59,23 +54,19 @@ class Env():
             active_player = next_player
             player_id = next_player_id
 
-            if not self.is_over():
-                trajectories[player_id].append(active_player)
-
             if self.human:
                 time.sleep(1)
 
         for player_id in range(self.player_num):
             active_player = self.get_state(player_id)
-            trajectories[player_id].append(active_player)
 
-        R = self.game.get_points()
-        print(f"Points: {R}")
-        for i in self.game.players:
-            print(f"History for {i.player_id}: {i.accumulated_points}")
-        trajectories = reorganize(trajectories, R)
+        game_points = self.game.get_points()
+        if self.verbose:
+            print(f"Points: {game_points}")
+            for i in self.game.players:
+                print(f"History for {i.player_id}: {i.accumulated_points}")
 
-        return trajectories, R
+        return [p.player_id for p in self.game.players], game_points, [p.accumulated_points for p in self.game.players]
 
     def is_over(self):
         return self.game.is_over()

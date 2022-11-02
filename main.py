@@ -13,16 +13,16 @@ agents = [agent_0, agent_1, agent_2, agent_3]
 
 env.set_agents(agents)
 
-n = 10 ** 4
+n = 10
+
+points = []
+
 print(f"Running {n} iterations")
 for i in range(n):
     if i % 1000 == 0:
         print(f"Iteration: {i}")
 
-    env.run()
+    player_ids, game_points, accumulated_player_points = env.run()
+    print(accumulated_player_points)
 
 print("Done")
-
-for i in range(4):
-    env.plot_points(agents[i])
-

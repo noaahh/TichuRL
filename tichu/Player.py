@@ -1,4 +1,4 @@
-from tichu.Card import Cards, Card
+from tichu.Card import Cards
 
 
 class Player:
@@ -38,5 +38,4 @@ class Player:
 
     def win(self, ground):
         self.won_card = self.won_card + ground.cards
-        print(ground.cards)
         self.point = self.point + sum(x.point for x in ground.cards.cards)

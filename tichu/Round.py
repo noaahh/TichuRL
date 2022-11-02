@@ -15,8 +15,6 @@ class Round():
         self.used = list()
         self.game = game
 
-
-
     def proceed_round(self, players, action):
         player = players[self.current_player]
 
@@ -57,11 +55,9 @@ class Round():
         state.played_cards = self.used
         return state
 
-
     def track_points(self):
         for player in self.game.players:
             player.accumulated_points.append(player.point)
-
 
     def is_over(self):
         return self.num_pass >= 3 - len(self.out_player)
