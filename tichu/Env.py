@@ -71,6 +71,8 @@ class Env():
 
         R = self.game.get_points()
         print(f"Points: {R}")
+        for i in self.game.players:
+            print(f"History for {i.player_id}: {i.accumulated_points}")
         trajectories = reorganize(trajectories, R)
 
         return trajectories, R

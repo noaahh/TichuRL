@@ -5,7 +5,7 @@ from tichu.Util import get_legal_combination
 
 class Round():
 
-    def __init__(self, num_players, first_player):
+    def __init__(self, num_players, first_player, game):
         self.num_players = num_players
         self.current_player = first_player
         self.out_player = list()
@@ -13,6 +13,9 @@ class Round():
         self.num_pass = 0
         self.ground = Ground()
         self.used = list()
+        self.game = game
+
+
 
     def proceed_round(self, players, action):
         player = players[self.current_player]
@@ -36,6 +39,7 @@ class Round():
             self.out_now = list()
             players[self.ground.player_id].win(self.ground)
             self.reset_round()
+            self.track_points()
 
             while self.out_player.count(self.current_player) == 1:
                 self.current_player = (self.current_player + 1) % self.num_players
@@ -49,8 +53,15 @@ class Round():
         state.legal_actions = get_legal_combination(state.action, self.ground)
         for player in players:
             state.card_num.append(player.hand.size)
+
         state.played_cards = self.used
         return state
+
+
+    def track_points(self):
+        for player in self.game.players:
+            player.accumulated_points.append(player.point)
+
 
     def is_over(self):
         return self.num_pass >= 3 - len(self.out_player)

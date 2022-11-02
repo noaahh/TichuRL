@@ -1,4 +1,4 @@
-from tichu.Card import Cards
+from tichu.Card import Cards, Card
 
 
 class Player:
@@ -8,6 +8,7 @@ class Player:
         self.hand = Cards()
         self.won_card = Cards()
         self.point = 0
+        self.accumulated_points = []
 
     def show_hand(self):
         if self.hand.size == 0:
@@ -37,3 +38,5 @@ class Player:
 
     def win(self, ground):
         self.won_card = self.won_card + ground.cards
+        print(ground.cards)
+        self.point = self.point + sum(x.point for x in ground.cards.cards)

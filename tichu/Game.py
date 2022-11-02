@@ -39,7 +39,7 @@ class Game:
                 self.first_player = i
 
         # Initialize round
-        self.round = Round(self.num_players, self.first_player)
+        self.round = Round(self.num_players, self.first_player, self)
 
         return self.round.get_state(self.players, self.first_player), self.first_player
 
@@ -65,7 +65,11 @@ class Game:
         out_player = self.round.get_out_player()
         point = 300
         for i in out_player:
-            points[i] = point
+            points[i] = point + self.players[i].point
+            self.players[i].accumulated_points.append(points[i])
             point -= 100
+
+        if 0 in points:
+            points[points.index(0)] = self.players[points.index(0)].point
 
         return points
