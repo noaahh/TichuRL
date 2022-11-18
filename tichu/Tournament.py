@@ -4,7 +4,6 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 from tqdm.notebook import tqdm
 
-from tichu.Team import Team
 from tichu.TichuEnv import TichuEnv
 
 
@@ -12,44 +11,86 @@ def binomial_distribution(n, p, k):
     return (math.factorial(n) / (math.factorial(k) * math.factorial(n - k))) * (p ** k) * ((1 - p) ** (n - k))
 
 
+class Team:
+    def __init__(self, agents):
+        if len(agents) != 2:
+            raise ValueError("Team must have 2 agents")
+
+        self.agents = agents
+        self.games_played = 0
+        self.score = 0
+        self.wins = 0
+
+    def get_team_id(self):
+        agents_copy = self.agents.copy()
+        agents_copy.sort(key=lambda x: x.strategy)
+        return "-".join([a.strategy for a in agents_copy])
+
+    # Probability of winning a game
+    def get_win_probability(self):
+        return self.wins / self.games_played
+
+    def __str__(self):
+        return self.get_team_id()
+
+    def __repr__(self):
+        return self.get_team_id()
+
+
 class Pairing:
     def __init__(self, teams):
+        if len(teams) != 2:
+            raise ValueError("Pairing must have 2 teams")
+
         self.teams = teams
-        self.scoring_tables = [{"0": 0, "1": 0, "2": 0, "3": 0}, {"0": 0, "1": 0, "2": 0, "3": 0}]
+        self.scoring_table = {teams[0].__str__(): {"0": 0, "1": 0, "2": 0, "3": 0},
+                              teams[1].__str__(): {"0": 0, "1": 0, "2": 0, "3": 0}}
+
+    def get_agent_list(self):
+        return [self.teams[0].agents[0], self.teams[1].agents[0],
+                self.teams[0].agents[1], self.teams[1].agents[1]]
 
     def get_pairing_id(self):
-        return " vs ".join([team.get_team_id() for team in self.teams])
+        return " vs ".join([team.__str__() for team in self.teams])
 
+    # Calculate the number of matches played
     def get_count_of_matches_played(self):
-        return sum(self.scoring_tables[0].values())
+        if sum(self.scoring_table[self.teams[0].__str__()].values()) != sum(self.scoring_table[self.teams[1].__str__()].values()):
+            raise ValueError("Number of matches played by both teams must be equal")
+
+        return sum(self.scoring_table[self.teams[0].__str__()].values())
 
     # Probability of scoring a certain amount of points by team i as a dictionary
-    def get_probability_of_scoring(self, i):
-        return {k: v / self.get_count_of_matches_played() for k, v in self.scoring_tables[i].items()}
+    def get_probability_of_scoring(self, team_id):
+        return {k: v / self.get_count_of_matches_played() for k, v in self.scoring_table[team_id].items()}
 
-    # Plot probability of scoring a  certain amount of points for every team
+    # Plot probability of scoring a certain amount of points for every team
     def plot_probability_of_scoring(self):
         fig = make_subplots(rows=1, cols=2, subplot_titles=(
-        f"Pairing {self.get_pairing_id()}, Team {self.teams[0].get_team_id()}",
-        f"Pairing {self.get_pairing_id()}, Team {self.teams[1].get_team_id()}"), shared_yaxes=True)
+            f"Team {self.teams[0].get_team_id()}",
+            f"Team {self.teams[1].get_team_id()}"), shared_yaxes=True)
         for i, team in enumerate(self.teams):
-            x = list(self.get_probability_of_scoring(i).keys())
-            y = list(self.get_probability_of_scoring(i).values())
+            x = list(self.get_probability_of_scoring(team.get_team_id()).keys())
+            y = list(self.get_probability_of_scoring(team.get_team_id()).values())
             fig.add_trace(go.Bar(x=x, y=y), row=1, col=i + 1)
+
+        fig.update_layout(title_text=f"Probability of scoring amount of points by team | Pairing {self.get_pairing_id()}")
         fig.show()
 
-    # Calculcate expected score for team i
-    def get_expected_score(self, i):
-        return sum([int(k) * v for k, v in self.get_probability_of_scoring(i).items()])
+    # Calculate expected score for team i
+    def get_expected_score(self, team_id):
+        return sum([int(k) * v for k, v in self.get_probability_of_scoring(team_id).items()])
 
-    def plot_bionomial_distributions(self):
+    def plot_binomial_distributions(self):
         fig = make_subplots(rows=1, cols=2, subplot_titles=(
-        f"Pairing {self.get_pairing_id()}, Team {self.teams[0].get_team_id()}",
-        f"Pairing {self.get_pairing_id()}, Team {self.teams[1].get_team_id()}"), shared_yaxes=True)
+            f"Team {self.teams[0].get_team_id()}",
+            f"Team {self.teams[1].get_team_id()}"), shared_yaxes=True)
         for i, team in enumerate(self.teams):
             x = list(range(0, self.get_count_of_matches_played() + 1))
             y = [binomial_distribution(self.get_count_of_matches_played(), team.get_win_probability(), k) for k in x]
             fig.add_trace(go.Bar(x=x, y=y), row=1, col=i + 1)
+
+        fig.update_layout(title_text=f"Binomial Distribution to win by number of rounds | Pairing {self.get_pairing_id()}")
         fig.show()
 
 
@@ -61,58 +102,62 @@ class Tournament:
 
     def play(self):
         for pairing in tqdm(self.pairings):
-            team_a = pairing.teams[0]
-            team_b = pairing.teams[1]
-
             for i in range(self.matches_per_pairing):
-
                 pairing_env = TichuEnv()
-                pairing_env.set_agents([team_a.player_a, team_b.player_a, team_a.player_b, team_b.player_b])
-                game_points, accumulated_player_points = pairing_env.run()
+                pairing_env.set_agents(pairing.get_agent_list())
+                game_points, _ = pairing_env.run()
 
-                points_by_agent = [[game_points[0], team_a], [game_points[1], team_b],
-                                   [game_points[2], team_a], [game_points[3], team_b]]
+                self.update_pairing_stats(pairing, game_points)
 
-                points_by_agent_copy = points_by_agent.copy()
-                points_by_agent_copy.sort(key=lambda x: x[0], reverse=True)
+    @staticmethod
+    def update_pairing_stats(pairing, game_points):
+        team_a = pairing.teams[0]
+        team_b = pairing.teams[1]
 
-                team_a.games_played += 1
-                team_b.games_played += 1
+        team_a.games_played += 1
+        team_b.games_played += 1
 
-                # Give score based on the official Tichu tournament scoring system
-                if points_by_agent_copy[0][1].__str__() == points_by_agent_copy[1][1].__str__():
-                    team_index = pairing.teams.index(points_by_agent_copy[0][1])
-                    team = pairing.teams[team_index]
+        points_by_team = [[game_points[0], team_a], [game_points[1], team_b],
+                           [game_points[2], team_a], [game_points[3], team_b]]
 
-                    pairing.scoring_tables[team_index]["3"] += 1
-                    pairing.scoring_tables[1 if team_index == 0 else 0]["0"] += 1
-                    team.wins += 1
+        points_by_team_copy = points_by_team.copy()
+        points_by_team_copy.sort(key=lambda x: x[0], reverse=True)
 
-                    team.score += 3
-                else:
-                    # Total points per team_index
-                    team_a_points = points_by_agent[0][0] + points_by_agent[2][0]
-                    team_b_points = points_by_agent[1][0] + points_by_agent[3][0]
+        # Give score based on the official Tichu tournament scoring system
+        if points_by_team_copy[0][1].__str__() == points_by_team_copy[1][1].__str__():
+            one_two_team = points_by_team_copy[0][1]
 
-                    # Win for team_index A or B
-                    if team_a_points > team_b_points:
-                        pairing.scoring_tables[0]["2"] += 1
-                        pairing.scoring_tables[1]["0"] += 1
-                        team_a.wins += 1
-                        team_a.score += 2
-                    elif team_a_points < team_b_points:
-                        pairing.scoring_tables[1]["2"] += 1
-                        pairing.scoring_tables[0]["0"] += 1
-                        team_b.wins += 1
-                        team_b.score += 2
+            pairing.scoring_table[one_two_team.__str__()]["3"] += 1
+            pairing.scoring_table[points_by_team_copy[-1][1].__str__()]["0"] += 1
 
-                    # Draw
-                    elif team_a_points == team_b_points:
-                        pairing.scoring_tables[0]["1"] += 1
-                        pairing.scoring_tables[1]["1"] += 1
+            one_two_team.wins += 1
+            one_two_team.score += 3
+        else:
+            # Total points per team_index
+            team_a_points = points_by_team[0][0] + points_by_team[2][0]
+            team_b_points = points_by_team[1][0] + points_by_team[3][0]
 
-                        team_a.score += 1
-                        team_b.score += 1
+            # Win for team_index A or B
+            if team_a_points > team_b_points:
+                pairing.scoring_table[team_a.__str__()]["2"] += 1
+                pairing.scoring_table[team_b.__str__()]["0"] += 1
+
+                team_a.wins += 1
+                team_a.score += 2
+            elif team_a_points < team_b_points:
+                pairing.scoring_table[team_b.__str__()]["2"] += 1
+                pairing.scoring_table[team_a.__str__()]["0"] += 1
+
+                team_b.wins += 1
+                team_b.score += 2
+
+            # Draw
+            elif team_a_points == team_b_points:
+                pairing.scoring_table[team_a.__str__()]["1"] += 1
+                pairing.scoring_table[team_b.__str__()]["1"] += 1
+
+                team_a.score += 1
+                team_b.score += 1
 
     # Create every possible team_index matchup from a list of teams
     @staticmethod
@@ -129,8 +174,8 @@ class Tournament:
         teams = []
         for i in range(len(agents)):
             for j in range(i + 1, len(agents)):
-                teams.append(Team(agents[i], agents[j]))
+                teams.append(Team([agents[i], agents[j]]))
 
-            teams.append(Team(agents[i], agents[i]))
+            teams.append(Team([agents[i], agents[i]]))
 
         return teams
