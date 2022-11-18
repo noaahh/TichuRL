@@ -74,7 +74,7 @@ class Pairing:
             y = list(self.get_probability_of_scoring(team.get_team_id()).values())
             fig.add_trace(go.Bar(x=x, y=y), row=1, col=i + 1)
 
-        fig.update_layout(title_text=f"Probability of scoring amount of points by team | Pairing {self.get_pairing_id()}")
+        fig.update_layout(title_text=f"Probability of scoring amount of points by team | Pairing {self.get_pairing_id()}", showlegend=False)
         fig.show()
 
     # Calculate expected score for team i
@@ -90,7 +90,7 @@ class Pairing:
             y = [binomial_distribution(self.get_count_of_matches_played(), team.get_win_probability(), k) for k in x]
             fig.add_trace(go.Bar(x=x, y=y), row=1, col=i + 1)
 
-        fig.update_layout(title_text=f"Binomial Distribution to win by number of rounds | Pairing {self.get_pairing_id()}")
+        fig.update_layout(title_text=f"Binomial Distribution to win by number of rounds | Pairing {self.get_pairing_id()}", showlegend=False)
         fig.show()
 
 
