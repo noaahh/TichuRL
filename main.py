@@ -1,28 +1,20 @@
-from agents.Human import Human
+from agents.Priority_max import Priority_max
+from agents.Priority_min import Priority_min
+from agents.Priority_min_copy import Priority_min_copy
 from agents.Random import Random
-from agents.Priority_min import  Priority_min
-from tichu.Env import Env
+from tichu.Tournament import Tournament
 
-env = Env(verbose=False)
+agents = [Priority_min(position=0), Random(position=3), Priority_max(position=1), Priority_min_copy(position=2)]
 
-agent_0 = Priority_min(position=0)
-agent_1 = Priority_min(position=1)
-agent_2 = Random(position=2)
-agent_3 = Random(position=3)
-agents = [agent_0, agent_1, agent_2, agent_3]
+wins = {}
+for k in range(20):
+    tournament = Tournament(agents)
+    tournament.play()
 
-env.set_agents(agents)
+    for team in tournament.teams:
+        wins.setdefault(team.get_team_id(), 0)
+        wins[team.get_team_id()] += team.score
 
-n = 1
-
-points = []
-
-print(f"Running {n} iterations")
-for i in range(n):
-    if i % 1000 == 0:
-        print(f"Iteration: {i}")
-
-    game_points, accumulated_player_points = env.run()
-    print(accumulated_player_points)
-
-print("Done")
+# Print sorted wins
+for k, v in sorted(wins.items(), key=lambda item: item[1], reverse=True):
+    print(f"{k}: {v}")

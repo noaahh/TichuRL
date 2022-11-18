@@ -5,10 +5,9 @@ import numpy as np
 from tichu.Game import Game
 
 
-class Env():
+class TichuEnv:
 
-    def __init__(self, human=0, verbose=0):
-        self.human = human
+    def __init__(self, verbose=0):
         self.verbose = verbose
         self.game = Game()
         self.player_num = self.game.get_player_num()
@@ -53,9 +52,6 @@ class Env():
 
             active_player = next_player
             player_id = next_player_id
-
-            if self.human:
-                time.sleep(1)
 
         for player_id in range(self.player_num):
             active_player = self.get_state(player_id)
