@@ -1,0 +1,38 @@
+name: Publish to GH Pages
+
+on:
+  push:
+    branches: [ main ]
+#   schedule:
+#     - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.10
+
+      - name: Install Wheel
+        run: |
+          pip install wheel setuptools
+      - name: Install Jupyter
+        run: |
+          pip install notebook
+          pip install nbconvert-theme-pale-sand-navy
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate HTML
+        run: |
+          jupyter nbconvert --execute --to html --template pale-sand-navy --output-dir dist tichu.ipynb
+          mv dist/data_pipeline.html dist/index.html
+      - name: Publish to GH Pages
+        uses: jamesives/github-pages-deploy-action@4.0.0
+        with:
+          branch: gh-pages
+          folder: dist
