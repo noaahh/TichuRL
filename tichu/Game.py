@@ -63,7 +63,7 @@ class Game:
     def get_points(self):
         points = [0, 0, 0, 0]
         out_player = self.round.get_out_player()
-        point = 200
+        point = 300
         for i in out_player:
             points[i] = point + self.players[i].point
             self.players[i].accumulated_points.append(points[i])

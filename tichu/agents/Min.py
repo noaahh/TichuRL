@@ -1,14 +1,14 @@
-class Priority_min_copy:
+class Min:
     def __init__(self, position):
         self.position = position
-        self.strategy = "Priority_min_copy"
+        self.strategy = "Min"
 
     def play(self, player):
         ### First player: Play high priority and min combination
         if player.ground.type == 'none':
             actions = player.action
 
-            idx = len(actions) - 1
+            idx = 5
             while idx >= 0:
                 if len(actions[idx]) > 0:
                     return actions[idx][0]

@@ -1,7 +1,7 @@
-class Priority_max:
+class Max:
     def __init__(self, position):
         self.position = position
-        self.strategy = "Priority_max"
+        self.strategy = "Max"
 
     def play(self, player):
         ### First player: Play high priority and min combination
