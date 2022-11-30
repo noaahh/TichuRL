@@ -9,12 +9,13 @@ class TichuEnv:
 
     def __init__(self, verbose=0):
         self.verbose = verbose
-        self.game = Game()
+        self.game = Game(self)
         self.player_num = self.game.get_player_num()
         self.points = np.zeros(4)
         self.state_shape = [1, 40]
         self.action_num = 8192
 
+        self.rounds_to_win = None
         self.timestep = 0
 
     def set_agents(self, agents):
@@ -62,7 +63,7 @@ class TichuEnv:
             for i in self.game.players:
                 print(f"History for {i.player_id}: {i.accumulated_points}")
 
-        return game_points, [p.accumulated_points for p in self.game.players]
+        return game_points, [p.accumulated_points for p in self.game.players], self.rounds_to_win
 
     def is_over(self):
         return self.game.is_over()

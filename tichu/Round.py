@@ -24,6 +24,9 @@ class Round():
             self.num_pass = 0
             if player.play_cards(action, self.ground, len(self.out_player)):
                 self.out_now.append(self.current_player)
+                self.game.rounds_played_per_player[self.current_player] = self.game.rounds_played
+
+
 
         self.current_player = (self.current_player + 1) % self.num_players
         while self.out_player.count(self.current_player) == 1 or self.out_now.count(self.current_player) == 1:
@@ -66,9 +69,10 @@ class Round():
         self.num_pass = 0
         self.used = self.used + self.ground.cards.cards
         self.ground = Ground()
+        self.game.rounds_played += 1
 
     def get_num_out(self):
         return len(self.out_player + self.out_now)
 
-    def get_out_player(self):
+    def get_out_players(self):
         return self.out_player + self.out_now

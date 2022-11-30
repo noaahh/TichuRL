@@ -11,6 +11,11 @@ def binomial_distribution(n, p, k):
     return (math.factorial(n) / (math.factorial(k) * math.factorial(n - k))) * (p ** k) * ((1 - p) ** (n - k))
 
 
+# poison distribution
+def poison_distribution(l, k):
+    return (l ** k) * math.exp(-l) / math.factorial(k)
+
+
 class Team:
     def __init__(self, agents):
         if len(agents) != 2:
@@ -20,6 +25,8 @@ class Team:
         self.games_played = 0
         self.score = 0
         self.wins = 0
+
+        self.rounds_for_win = []
 
     def get_team_id(self):
         agents_copy = self.agents.copy()
@@ -35,6 +42,31 @@ class Team:
 
     def __repr__(self):
         return self.get_team_id()
+
+    # Plot poisson distribution
+    def plot_rounds_for_win(self):
+        rounds = list(range(1, 22))
+        rounds_distribution = [poison_distribution(sum(self.rounds_for_win) / len(self.rounds_for_win), r) for r in
+                               rounds]
+
+        fig = go.Figure()
+        fig.add_trace(go.Bar(x=rounds, y=rounds_distribution, name="Poisson distribution"))
+        fig.update_layout(title_text="Rounds for win poisson distribution for team " + self.get_team_id())
+        fig.show()
+
+    # Plot cumulative poisson distribution as bar plot for rounds for win
+    def plot_rounds_for_win_cumulative(self):
+        rounds = list(range(1, 22))
+        rounds_distribution = [poison_distribution(sum(self.rounds_for_win) / len(self.rounds_for_win), r) for r in
+                               rounds]
+        rounds_distribution_cumulative = []
+        for i in range(len(rounds_distribution)):
+            rounds_distribution_cumulative.append(sum(rounds_distribution[:i + 1]))
+
+        fig = go.Figure()
+        fig.add_trace(go.Bar(x=rounds, y=rounds_distribution_cumulative, name="Poisson distribution"))
+        fig.update_layout(title_text="Rounds for win cumulative poisson distribution for team " + self.get_team_id())
+        fig.show()
 
 
 class Pairing:
@@ -55,7 +87,8 @@ class Pairing:
 
     # Calculate the number of matches played
     def get_count_of_matches_played(self):
-        if sum(self.scoring_table[self.teams[0].__str__()].values()) != sum(self.scoring_table[self.teams[1].__str__()].values()):
+        if sum(self.scoring_table[self.teams[0].__str__()].values()) != sum(
+                self.scoring_table[self.teams[1].__str__()].values()):
             raise ValueError("Number of matches played by both teams must be equal")
 
         return sum(self.scoring_table[self.teams[0].__str__()].values())
@@ -74,7 +107,9 @@ class Pairing:
             y = list(self.get_probability_of_scoring(team.get_team_id()).values())
             fig.add_trace(go.Bar(x=x, y=y), row=1, col=i + 1)
 
-        fig.update_layout(title_text=f"Probability of scoring amount of points by team | Pairing {self.get_pairing_id()}", showlegend=False)
+        fig.update_layout(
+            title_text=f"Probability of scoring amount of points by team | Pairing {self.get_pairing_id()}",
+            showlegend=False)
         fig.show()
 
     # Calculate expected score for team i
@@ -90,7 +125,9 @@ class Pairing:
             y = [binomial_distribution(self.get_count_of_matches_played(), team.get_win_probability(), k) for k in x]
             fig.add_trace(go.Bar(x=x, y=y), row=1, col=i + 1)
 
-        fig.update_layout(title_text=f"Binomial Distribution to win by number of rounds | Pairing {self.get_pairing_id()}", showlegend=False)
+        fig.update_layout(
+            title_text=f"Binomial Distribution to win by number of rounds | Pairing {self.get_pairing_id()}",
+            showlegend=False)
         fig.show()
 
 
@@ -105,12 +142,11 @@ class Tournament:
             for i in range(self.matches_per_pairing):
                 pairing_env = TichuEnv()
                 pairing_env.set_agents(pairing.get_agent_list())
-                game_points, _ = pairing_env.run()
-
-                self.update_pairing_stats(pairing, game_points)
+                game_points, accumulated_points_per_round, rounds_to_win = pairing_env.run()
+                self.update_pairing_stats(pairing, game_points, rounds_to_win)
 
     @staticmethod
-    def update_pairing_stats(pairing, game_points):
+    def update_pairing_stats(pairing, game_points, rounds_to_win):
         team_a = pairing.teams[0]
         team_b = pairing.teams[1]
 
@@ -118,7 +154,7 @@ class Tournament:
         team_b.games_played += 1
 
         points_by_team = [[game_points[0], team_a], [game_points[1], team_b],
-                           [game_points[2], team_a], [game_points[3], team_b]]
+                          [game_points[2], team_a], [game_points[3], team_b]]
 
         points_by_team_copy = points_by_team.copy()
         points_by_team_copy.sort(key=lambda x: x[0], reverse=True)
@@ -131,6 +167,8 @@ class Tournament:
             pairing.scoring_table[points_by_team_copy[-1][1].__str__()]["0"] += 1
 
             one_two_team.wins += 1
+            one_two_team.rounds_for_win.append(rounds_to_win)
+
             one_two_team.score += 3
         else:
             # Total points per team_index
@@ -143,12 +181,16 @@ class Tournament:
                 pairing.scoring_table[team_b.__str__()]["0"] += 1
 
                 team_a.wins += 1
+                team_a.rounds_for_win.append(rounds_to_win)
+
                 team_a.score += 2
             elif team_a_points < team_b_points:
                 pairing.scoring_table[team_b.__str__()]["2"] += 1
                 pairing.scoring_table[team_a.__str__()]["0"] += 1
 
                 team_b.wins += 1
+                team_b.rounds_for_win.append(rounds_to_win)
+
                 team_b.score += 2
 
             # Draw

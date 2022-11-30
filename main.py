@@ -33,6 +33,6 @@ def show_tournament(tournament):
 
 
 if __name__ == "__main__":
-    matches_per_pairing = 100
+    matches_per_pairing = 10
     tournament = Tournament(agents, matches_per_pairing=matches_per_pairing)
     tournament.play()

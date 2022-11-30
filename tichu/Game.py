@@ -5,8 +5,12 @@ from tichu.Util import Deal
 
 
 class Game:
-    def __init__(self, num_players=4):
+    def __init__(self, env, num_players=4):
         self.num_players = num_players
+        self.env = env
+
+        self.rounds_played = 1
+        self.rounds_played_per_player = {0: 0, 1: 0, 2: 0, 3: 0}
 
     def init_game(self):
         # Initialize parameters
@@ -62,9 +66,12 @@ class Game:
 
     def get_points(self):
         points = [0, 0, 0, 0]
-        out_player = self.round.get_out_player()
+        out_players = self.round.get_out_players()
         point = 300
-        for i in out_player:
+
+        self.env.rounds_to_win = self.rounds_played_per_player[out_players[0]]
+
+        for i in out_players:
             points[i] = point + self.players[i].point
             self.players[i].accumulated_points.append(points[i])
             point -= 100
