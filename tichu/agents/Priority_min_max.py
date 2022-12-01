@@ -1,6 +1,5 @@
 class Priority_min_max:
-    def __init__(self, position):
-        self.position = position
+    def __init__(self):
         self.strategy = "Priority_min_max"
 
     def play(self, player):

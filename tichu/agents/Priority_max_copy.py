@@ -1,6 +1,5 @@
 class Priority_max_copy:
-    def __init__(self, position):
-        self.position = position
+    def __init__(self):
         self.strategy = "Priority_max_copy"
 
     def play(self, player):

@@ -2,8 +2,7 @@ import random
 
 
 class Random:
-    def __init__(self, position):
-        self.position = position
+    def __init__(self):
         self.strategy = "Random"
 
     def play(self, player):

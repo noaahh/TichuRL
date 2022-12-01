@@ -2,8 +2,7 @@ import sys
 
 
 class Human:
-    def __init__(self, position):
-        self.position = position
+    def __init__(self):
         self.strategy = "Human"
 
     def play(self, play):

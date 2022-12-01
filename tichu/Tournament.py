@@ -11,7 +11,6 @@ def binomial_distribution(n, p, k):
     return (math.factorial(n) / (math.factorial(k) * math.factorial(n - k))) * (p ** k) * ((1 - p) ** (n - k))
 
 
-# poison distribution
 def poison_distribution(l, k):
     return (l ** k) * math.exp(-l) / math.factorial(k)
 
@@ -26,7 +25,7 @@ class Team:
         self.score = 0
         self.wins = 0
 
-        self.rounds_for_win = []
+        self.rounds_for_win = {}
 
     def get_team_id(self):
         agents_copy = self.agents.copy()
@@ -43,29 +42,24 @@ class Team:
     def __repr__(self):
         return self.get_team_id()
 
-    # Plot poisson distribution
+    # Add rounds to win in dictionary against a given team
+    def add_rounds_for_win(self, rounds, against_team):
+        if against_team not in self.rounds_for_win:
+            self.rounds_for_win[against_team.get_team_id()] = []
+
+        self.rounds_for_win[against_team.get_team_id()].append(rounds)
+
+    # Plot poisson distribution of rounds to win against each team in one plot as bar plots
     def plot_rounds_for_win(self):
-        rounds = list(range(1, 22))
-        rounds_distribution = [poison_distribution(sum(self.rounds_for_win) / len(self.rounds_for_win), r) for r in
-                               rounds]
+        fig = make_subplots(rows=1, cols=1)
 
-        fig = go.Figure()
-        fig.add_trace(go.Bar(x=rounds, y=rounds_distribution, name="Poisson distribution"))
-        fig.update_layout(title_text="Rounds for win poisson distribution for team " + self.get_team_id())
-        fig.show()
+        for team, rounds in self.rounds_for_win.items():
+            x = list(range(1, 22))
+            y = [poison_distribution(sum(rounds) / len(rounds), k) for k in x]
 
-    # Plot cumulative poisson distribution as bar plot for rounds for win
-    def plot_rounds_for_win_cumulative(self):
-        rounds = list(range(1, 22))
-        rounds_distribution = [poison_distribution(sum(self.rounds_for_win) / len(self.rounds_for_win), r) for r in
-                               rounds]
-        rounds_distribution_cumulative = []
-        for i in range(len(rounds_distribution)):
-            rounds_distribution_cumulative.append(sum(rounds_distribution[:i + 1]))
+            fig.add_trace(go.Bar(x=x, y=y, name=team, visible='legendonly'))
 
-        fig = go.Figure()
-        fig.add_trace(go.Bar(x=rounds, y=rounds_distribution_cumulative, name="Poisson distribution"))
-        fig.update_layout(title_text="Rounds for win cumulative poisson distribution for team " + self.get_team_id())
+        fig.update_layout(title_text="Rounds to win against each team for " + self.get_team_id())
         fig.show()
 
 
@@ -167,7 +161,7 @@ class Tournament:
             pairing.scoring_table[points_by_team_copy[-1][1].__str__()]["0"] += 1
 
             one_two_team.wins += 1
-            one_two_team.rounds_for_win.append(rounds_to_win)
+            one_two_team.add_rounds_for_win(rounds_to_win, points_by_team_copy[2][1])
 
             one_two_team.score += 3
         else:
@@ -181,7 +175,7 @@ class Tournament:
                 pairing.scoring_table[team_b.__str__()]["0"] += 1
 
                 team_a.wins += 1
-                team_a.rounds_for_win.append(rounds_to_win)
+                team_a.add_rounds_for_win(rounds_to_win, team_b)
 
                 team_a.score += 2
             elif team_a_points < team_b_points:
@@ -189,7 +183,7 @@ class Tournament:
                 pairing.scoring_table[team_a.__str__()]["0"] += 1
 
                 team_b.wins += 1
-                team_b.rounds_for_win.append(rounds_to_win)
+                team_b.add_rounds_for_win(rounds_to_win, team_a)
 
                 team_b.score += 2
 
@@ -208,6 +202,9 @@ class Tournament:
         for i in range(len(teams)):
             for j in range(i + 1, len(teams)):
                 pairs.append(Pairing([teams[i], teams[j]]))
+
+            pairs.append(Pairing([teams[i], teams[i]]))
+
         return pairs
 
     # Create all possible combinations of teams given 4 agents

@@ -7,7 +7,7 @@ from tichu.agents.Priority_min_max import Priority_min_max
 from tichu.agents.Random import Random
 from tichu.Tournament import Tournament
 
-agents = [Min(position=0), Random(position=3), Max(position=1), MinRisk(position=2), Priority_min_max(position=4)]
+agents = [Min(), Random(), Max(), MinRisk(), Priority_min_max()]
 
 
 def show_tournament(tournament):

@@ -1,6 +1,5 @@
 class Max:
-    def __init__(self, position):
-        self.position = position
+    def __init__(self):
         self.strategy = "Max"
 
     def play(self, player):

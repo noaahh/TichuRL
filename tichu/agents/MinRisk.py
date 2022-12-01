@@ -1,6 +1,5 @@
 class MinRisk:
-    def __init__(self, position):
-        self.position = position
+    def __init__(self):
         self.strategy = "MinRisk"
 
     def play(self, player):
