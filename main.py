@@ -14,7 +14,7 @@ def show_tournament(tournament):
     wins = {}
     for team in tournament.teams:
         wins.setdefault(team.get_team_id(), 0)
-        wins[team.get_team_id()] += team.score
+        wins[team.get_team_id()] += team.scores
 
     # Print sorted wins
     for k, v in sorted(wins.items(), key=lambda item: item[1], reverse=True):

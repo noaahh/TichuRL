@@ -60,8 +60,12 @@ class Team:
 
         return self.wins[against_team_id] / self.matches_per_pairing
 
+    # Get overall win probability
+    def get_overall_win_probability(self):
+        return sum(self.wins.values()) / (self.matches_per_pairing * len(self.wins))
+
     # Plot win probability against each team in one plot as bar plots and sort by win probability
-    def plot_win_probability(self):
+    def plot_win_probability_against_teams(self):
         fig = make_subplots(rows=1, cols=1)
 
         x = list(k for k in self.wins.keys() if k != self.get_team_id())
@@ -86,10 +90,6 @@ class Team:
 
         fig.update_layout(title_text="Rounds to win against each team for " + self.get_team_id())
         fig.show()
-
-    # Get overall win probability
-    def get_overall_win_probability(self):
-        return sum(self.wins.values()) / (self.matches_per_pairing * len(self.wins))
 
 
 class Pairing:
@@ -206,11 +206,9 @@ class Tournament:
 
             # Draw
             elif team_a_points == team_b_points:
-                pairing.scoring_table[team_a.__str__()]["1"] += 1
-                pairing.scoring_table[team_b.__str__()]["1"] += 1
-
-                team_a.scores.append(1)
-                team_b.scores.append(1)
+                for team in pairing.teams:
+                    pairing.scoring_table[team.__str__()]["1"] += 1
+                    team.scores.append(1)
 
     # Create every possible team_index matchup from a list of teams
     @staticmethod
