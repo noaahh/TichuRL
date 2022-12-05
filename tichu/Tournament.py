@@ -15,6 +15,23 @@ def poison_distribution(l, k):
     return (l ** k) * math.exp(-l) / math.factorial(k)
 
 
+# Find the Z Alpha/2 (za/2) value for a given confidence level
+def find_z_alpha_over_2(confidence_level):
+    if confidence_level == 0.90:
+        return 1.645
+    elif confidence_level == 0.95:
+        return 1.96
+    elif confidence_level == 0.99:
+        return 2.576
+    else:
+        raise ValueError(f"Confidence level {confidence_level} not supported")
+
+# calculate the t Alpha/2 (ta/2) value for a given confidence level, dynamically based on alpha given
+
+
+
+
+
 class Team:
     def __init__(self, agents, matches_per_pairing):
         if len(agents) != 2:
@@ -90,6 +107,30 @@ class Team:
 
         fig.update_layout(title_text="Rounds to win against each team for " + self.get_team_id())
         fig.show()
+
+    # Confidence interval as tuple for the win probability against a given team with a given confidence level
+    def get_confidence_interval(self, against_team_id, confidence_level=.95):
+        if against_team_id not in self.wins:
+            return 0
+
+        p = self.get_win_probability(against_team_id)
+        n = self.matches_per_pairing
+        za_over_2 = find_z_alpha_over_2(confidence_level)
+
+        return p - za_over_2 * math.sqrt(p * (1 - p) / n), p + za_over_2 * math.sqrt(p * (1 - p) / n)
+
+    # Print win probability against each team together with the confidence interval for a given confidence level and
+    # sort by win probability (descending) state the team ids and the confidence level
+    def print_win_probability_against_teams(self, confidence_level=.95):
+        print(f"Win probability against each team for {self.get_team_id()} with confidence level {confidence_level}")
+        print("Team ID\t\tWin probability\t\tConfidence interval")
+
+        for team, win_prob in self.wins.items():
+            # Skip self
+            if team == self.get_team_id():
+                continue
+
+            print(f"{team}\t\t{self.get_win_probability(team):.2f}\t\t\t{self.get_confidence_interval(team, confidence_level)}")
 
 
 class Pairing:
