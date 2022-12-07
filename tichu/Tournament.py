@@ -40,6 +40,10 @@ class Team:
         self.wins = {}
         self.rounds_for_win = {}
 
+    # Get team score
+    def get_score(self):
+        return sum(self.scores)
+
     def get_team_id(self):
         agents_copy = self.agents.copy()
         agents_copy.sort(key=lambda x: x.strategy)
@@ -91,14 +95,14 @@ class Team:
         fig.show()
 
     # Plot poisson distribution of rounds to win against each team in one plot as bar plots
-    def plot_rounds_for_win(self):
+    def plot_rounds_for_win(self, hide_teams=False):
         fig = make_subplots(rows=1, cols=1)
 
         for team, rounds in self.rounds_for_win.items():
             x = list(range(1, 22))
             y = [poison_distribution(sum(rounds) / len(rounds), k) for k in x]
 
-            fig.add_trace(go.Bar(x=x, y=y, name=team, visible='legendonly'))
+            fig.add_trace(go.Bar(x=x, y=y, name=team, visible='legendonly' if hide_teams else True))
 
         fig.update_layout(title_text="Rounds to win against each team for " + self.get_team_id())
         fig.show()
@@ -125,7 +129,8 @@ class Team:
             if team == self.get_team_id():
                 continue
 
-            print(f"{team}\t\t{self.get_win_probability(team):.2f}\t\t\t{self.get_win_confidence_interval(team, confidence_level)}")
+            print(
+                f"{team}\t\t{self.get_win_probability(team):.2f}\t\t\t{self.get_win_confidence_interval(team, confidence_level)}")
 
 
 class Pairing:
@@ -152,14 +157,6 @@ class Pairing:
 
         return sum(self.scoring_table[self.teams[0].__str__()].values())
 
-    # Probability of scoring a certain amount of points by team i as a dictionary
-    def get_probability_of_scoring(self, team_id):
-        return {k: v / self.get_count_of_matches_played() for k, v in self.scoring_table[team_id].items()}
-
-    # Calculate expected scores for team i
-    def get_expected_score(self, team_id):
-        return sum([int(k) * v for k, v in self.get_probability_of_scoring(team_id).items()])
-
 
 class Tournament:
     def __init__(self, available_agents, matches_per_pairing=100, verbose=False):
@@ -167,9 +164,13 @@ class Tournament:
         self.pairings = Tournament.create_all_possible_pairings(self.teams)
         self.matches_per_pairing = matches_per_pairing
 
+    # Get winner team of tournament based on score
+    def get_winner_team(self):
+        return max(self.teams, key=lambda team: team.get_score())
+
     def play(self):
         for pairing in tqdm(self.pairings):
-            for i in range(self.matches_per_pairing):
+            for _ in range(self.matches_per_pairing):
                 pairing_env = TichuEnv()
                 pairing_env.set_agents(pairing.get_agent_list())
                 game_points, accumulated_points_per_round, rounds_to_win = pairing_env.run()
