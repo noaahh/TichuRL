@@ -15,8 +15,8 @@ def poison_distribution(l, k):
     return (l ** k) * math.exp(-l) / math.factorial(k)
 
 
-# Find the Z Alpha/2 (za/2) value for a given confidence level
-def find_z_alpha_over_2(confidence_level):
+# Find the Z score for a given confidence level
+def get_z_score(confidence_level):
     if confidence_level == 0.90:
         return 1.645
     elif confidence_level == 0.95:
@@ -114,23 +114,20 @@ class Team:
 
         p = self.get_win_probability(against_team_id)
         n = self.matches_per_pairing
-        za_over_2 = find_z_alpha_over_2(confidence_level)
+        z_score = get_z_score(confidence_level)
 
-        return p - za_over_2 * math.sqrt(p * (1 - p) / n), p + za_over_2 * math.sqrt(p * (1 - p) / n)
+        return p - z_score * math.sqrt(p * (1 - p) / n), p + z_score * math.sqrt(p * (1 - p) / n)
 
-    # Print win probability against each team together with the confidence interval for a given confidence level and
-    # sort by win probability (descending) state the team ids and the confidence level
-    def print_win_probability_against_teams(self, confidence_level=.95):
-        print(f"Win probability against each team for {self.get_team_id()} with confidence level {confidence_level}")
-        print("Team ID\t\tWin probability\t\tConfidence interval")
+    # Confidence interval for the average rounds to win against a given team with a given confidence level
+    def get_rounds_for_win_confidence_interval(self, against_team_id, confidence_level=.95):
+        if against_team_id not in self.rounds_for_win:
+            return 0
 
-        for team, win_prob in self.wins.items():
-            # Skip self
-            if team == self.get_team_id():
-                continue
+        x = sum(self.rounds_for_win[against_team_id]) / len(self.rounds_for_win[against_team_id])
+        n = len(self.rounds_for_win[against_team_id])
+        z_score = get_z_score(confidence_level)
 
-            print(
-                f"{team}\t\t{self.get_win_probability(team):.2f}\t\t\t{self.get_win_confidence_interval(team, confidence_level)}")
+        return x - z_score * math.sqrt(x / n), x + z_score * math.sqrt(x / n)
 
 
 class Pairing:
