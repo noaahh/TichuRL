@@ -2,10 +2,10 @@ import math
 
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
+
 from tqdm.notebook import tqdm
 
 from tichu.TichuEnv import TichuEnv
-
 
 def binomial_distribution(n, p, k):
     return (math.factorial(n) / (math.factorial(k) * math.factorial(n - k))) * (p ** k) * ((1 - p) ** (n - k))
@@ -41,6 +41,12 @@ class Team:
         self.draws = {}
         self.rounds_for_win = {}
 
+    def __str__(self):
+        return self.get_team_id()
+
+    def __repr__(self):
+        return self.get_team_id()
+
     # Get team score
     def get_score(self):
         return sum(self.scores)
@@ -48,13 +54,7 @@ class Team:
     def get_team_id(self):
         agents_copy = self.agents.copy()
         agents_copy.sort(key=lambda x: x.strategy)
-        return "-".join([a.strategy for a in agents_copy])
-
-    def __str__(self):
-        return self.get_team_id()
-
-    def __repr__(self):
-        return self.get_team_id()
+        return " & ".join([a.strategy for a in agents_copy])
 
     # Add rounds to win in dictionary against a given team
     def add_rounds_for_win(self, rounds, against_team):
@@ -76,6 +76,7 @@ class Team:
             self.draws[against_team.get_team_id()] = 0
 
         self.draws[against_team.get_team_id()] += 1
+
     # Get win probability against a given team
     def get_win_probability(self, against_team_id):
         if against_team_id not in self.wins:
@@ -95,29 +96,13 @@ class Team:
     def get_overall_win_probability(self):
         return sum(self.wins.values()) / (self.matches_per_pairing * len(self.wins))
 
-    # Plot win probability against each team in one plot as bar plots and sort by win probability
-    def plot_win_probability_against_teams(self):
-        fig = make_subplots(rows=1, cols=1)
-
-        x = list(k for k in self.wins.keys() if k != self.get_team_id())
-        y = [self.get_win_probability(team) for team in x]
-
-        # Sort by win probability
-        x, y = zip(*sorted(zip(x, y), key=lambda item: item[1], reverse=True))
-
-        fig.add_trace(go.Bar(x=x, y=y, name=self.get_team_id()))
-        fig.update_layout(title_text="Win probability against each team for " + self.get_team_id())
-        fig.show()
-
-
-
     # Plot win probability and draw probability against each team as stacked bar plots
     # use two colors for win and draw probability
     # make sure that the y starts at 0 and ends at 1
-    def plot_win_and_draw_probability_against_teams(self):
+    def plot_win_and_draw_probability_against_teams(self, against_teams):
         fig = make_subplots(rows=1, cols=1)
 
-        x = list(k for k in self.wins.keys() if k != self.get_team_id())
+        x = list(k.get_team_id() for k in against_teams if k.get_team_id() != self.get_team_id())
         y = [self.get_win_probability(team) for team in x]
         y2 = [self.get_draw_probability(team) for team in x]
 
@@ -127,21 +112,24 @@ class Team:
         fig.add_trace(go.Bar(x=x, y=y, name="Win probability", marker_color="green"))
         fig.add_trace(go.Bar(x=x, y=y2, name="Draw probability", marker_color="orange"))
         fig.update_layout(title_text="Win and draw probability against each team for " + self.get_team_id())
+
+        # Set y axis to start at 0 and end at 1
+        fig.update_yaxes(range=[0, 1])
+
         fig.show()
 
-
-
-
-
     # Plot poisson distribution of rounds to win against each team in one plot as bar plots
-    def plot_rounds_for_win(self, hide_teams=False):
+    def plot_rounds_for_win(self, against_teams):
         fig = make_subplots(rows=1, cols=1)
 
         for team, rounds in self.rounds_for_win.items():
+            if team not in [t.get_team_id() for t in against_teams]:
+                continue
+
             x = list(range(1, 22))
             y = [poison_distribution(sum(rounds) / len(rounds), k) for k in x]
 
-            fig.add_trace(go.Bar(x=x, y=y, name=team, visible='legendonly' if hide_teams else True))
+            fig.add_trace(go.Bar(x=x, y=y, name=team))
 
         fig.update_layout(title_text="Rounds to win against each team for " + self.get_team_id())
         fig.show()
@@ -155,9 +143,13 @@ class Team:
         n = self.matches_per_pairing
         z_score = get_z_score(confidence_level)
 
-        return p - z_score * math.sqrt(p * (1 - p) / n), p + z_score * math.sqrt(p * (1 - p) / n)
+        interval = p - z_score * math.sqrt(p * (1 - p) / n), p + z_score * math.sqrt(p * (1 - p) / n)
+
+        # Round to 3 decimal places and return
+        return round(interval[0], 3), round(interval[1], 3)
 
     # Confidence interval for the average rounds to win against a given team with a given confidence level
+    # TODO: does this make sense?
     def get_rounds_for_win_confidence_interval(self, against_team_id, confidence_level=.95):
         if against_team_id not in self.rounds_for_win:
             return 0
@@ -168,11 +160,10 @@ class Team:
 
         return x - z_score * math.sqrt(x / n), x + z_score * math.sqrt(x / n)
 
-
 class Pairing:
     def __init__(self, teams):
         if len(teams) != 2:
-            raise ValueError("Pairing must have 2 teams")
+            raise ValueError("Pairing must have 2 against_teams")
 
         self.teams = teams
         self.scoring_table = {teams[0].__str__(): {"0": 0, "1": 0, "2": 0, "3": 0},
@@ -189,7 +180,7 @@ class Pairing:
     def get_count_of_matches_played(self):
         if sum(self.scoring_table[self.teams[0].__str__()].values()) != sum(
                 self.scoring_table[self.teams[1].__str__()].values()):
-            raise ValueError("Number of matches played by both teams must be equal")
+            raise ValueError("Number of matches played by both against_teams must be equal")
 
         return sum(self.scoring_table[self.teams[0].__str__()].values())
 
@@ -200,14 +191,6 @@ class Tournament:
         self.pairings = Tournament.create_all_possible_pairings(self.teams)
         self.matches_per_pairing = matches_per_pairing
 
-    # Get winner team of tournament based on score
-    def get_winner_team(self):
-        return max(self.teams, key=lambda team: team.get_score())
-
-    # Get top three teams of tournament based on score
-    def get_top_three_teams(self):
-        return sorted(self.teams, key=lambda team: team.get_score(), reverse=True)[:3]
-
     def play(self):
         for pairing in tqdm(self.pairings):
             for _ in range(self.matches_per_pairing):
@@ -215,6 +198,16 @@ class Tournament:
                 pairing_env.set_agents(pairing.get_agent_list())
                 game_points, accumulated_points_per_round, rounds_to_win = pairing_env.run()
                 self.update_pairing_stats(pairing, game_points, rounds_to_win)
+
+    # Get top three teams based on final score
+    def get_top_three_teams(self):
+        return sorted(self.teams, key=lambda team: team.get_score(), reverse=True)[:3]
+
+    # Get team with given team id
+    def get_team(self, team_id):
+        for team in self.teams:
+            if team.get_team_id() == team_id:
+                return team
 
     # Plot cumulative score over time for each team of the tournament as line plots
     def plot_cumulative_score(self):
@@ -227,6 +220,18 @@ class Tournament:
 
         fig.update_layout(title_text="Cumulative score over time for each team")
         fig.show()
+
+    # Plot total final score for each team of the tournament as bar plots and order them by their final total score
+    def plot_total_score(self):
+        fig = go.Figure(data=[go.Bar(x=[team.get_team_id() for team in self.teams],
+                                     y=[team.get_score() for team in self.teams])])
+
+        fig.update_layout(title_text="Total score for each team")
+        fig.show()
+
+    # Get all pairings of the tournament where the given team is involved in
+    def get_pairings_for_team(self, team):
+        return [p for p in self.pairings if team in p.teams]
 
     @staticmethod
     def update_pairing_stats(pairing, game_points, rounds_to_win):
@@ -283,7 +288,6 @@ class Tournament:
 
             # Draw
             elif team_a_points == team_b_points:
-
                 team_b.add_draw(team_a)
                 team_a.add_draw(team_b)
 
@@ -291,7 +295,7 @@ class Tournament:
                     pairing.scoring_table[team.__str__()]["1"] += 1
                     team.scores.append(1)
 
-    # Create every possible team_index matchup from a list of teams
+    # Create every possible team_index matchup from a list of against_teams
     @staticmethod
     def create_all_possible_pairings(teams):
         pairs = []
@@ -303,7 +307,7 @@ class Tournament:
 
         return pairs
 
-    # Create all possible combinations of teams given 4 agents
+    # Create all possible combinations of against_teams given 4 agents
     @staticmethod
     def create_all_possible_teams_from_agents(agents, matches_per_pairing):
         teams = []
