@@ -38,6 +38,7 @@ class Team:
         self.games_played = 0
         self.scores = []
         self.wins = {}
+        self.draws = {}
         self.rounds_for_win = {}
 
     # Get team score
@@ -69,12 +70,26 @@ class Team:
 
         self.wins[against_team.get_team_id()] += 1
 
+    # Add draw to dictionary against a given team
+    def add_draw(self, against_team):
+        if against_team.get_team_id() not in self.draws:
+            self.draws[against_team.get_team_id()] = 0
+
+        self.draws[against_team.get_team_id()] += 1
     # Get win probability against a given team
     def get_win_probability(self, against_team_id):
         if against_team_id not in self.wins:
             return 0
 
         return self.wins[against_team_id] / self.matches_per_pairing
+
+    # Get win probability against a given team
+    def get_draw_probability(self, against_team_id):
+        if against_team_id not in self.draws:
+            return 0
+
+        # get difference of the two win probabilities
+        return self.draws[against_team_id] / self.matches_per_pairing
 
     # Get overall win probability
     def get_overall_win_probability(self):
@@ -93,6 +108,30 @@ class Team:
         fig.add_trace(go.Bar(x=x, y=y, name=self.get_team_id()))
         fig.update_layout(title_text="Win probability against each team for " + self.get_team_id())
         fig.show()
+
+
+
+    # Plot win probability and draw probability against each team as stacked bar plots
+    # use two colors for win and draw probability
+    # make sure that the y starts at 0 and ends at 1
+    def plot_win_and_draw_probability_against_teams(self):
+        fig = make_subplots(rows=1, cols=1)
+
+        x = list(k for k in self.wins.keys() if k != self.get_team_id())
+        y = [self.get_win_probability(team) for team in x]
+        y2 = [self.get_draw_probability(team) for team in x]
+
+        # Sort by win probability
+        x, y, y2 = zip(*sorted(zip(x, y, y2), key=lambda item: item[1], reverse=True))
+
+        fig.add_trace(go.Bar(x=x, y=y, name="Win probability", marker_color="green"))
+        fig.add_trace(go.Bar(x=x, y=y2, name="Draw probability", marker_color="orange"))
+        fig.update_layout(title_text="Win and draw probability against each team for " + self.get_team_id())
+        fig.show()
+
+
+
+
 
     # Plot poisson distribution of rounds to win against each team in one plot as bar plots
     def plot_rounds_for_win(self, hide_teams=False):
@@ -244,6 +283,10 @@ class Tournament:
 
             # Draw
             elif team_a_points == team_b_points:
+
+                team_b.add_draw(team_a)
+                team_a.add_draw(team_b)
+
                 for team in pairing.teams:
                     pairing.scoring_table[team.__str__()]["1"] += 1
                     team.scores.append(1)

@@ -1,13 +1,13 @@
 import plotly.express as px
 
 from tichu.agents.Max import Max
-from tichu.agents.Min import Min
-from tichu.agents.MinRisk import MinRisk
+from tichu.agents.Conservative import SaveMinimum
+from tichu.agents.Risk import MinRisk
 from tichu.agents.Priority_min_max import Priority_min_max
 from tichu.agents.Random import Random
 from tichu.Tournament import Tournament
 
-agents = [Min(), Random(), Max(), MinRisk(), Priority_min_max()]
+agents = [SaveMinimum(), Random(), Max(), MinRisk(), Priority_min_max()]
 
 
 def show_tournament(tournament):

@@ -1,13 +1,13 @@
-class Min:
+class Risk:
     def __init__(self):
-        self.strategy = "Min"
+        self.strategy = "Risk Taker"
 
     def play(self, player):
         ### First player: Play high priority and min combination
         if player.ground.type == 'none':
             actions = player.action
 
-            idx = 5
+            idx = len(actions) - 1
             while idx >= 0:
                 if len(actions[idx]) > 0:
                     return actions[idx][0]

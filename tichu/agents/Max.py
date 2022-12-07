@@ -1,6 +1,6 @@
 class Max:
     def __init__(self):
-        self.strategy = "Max"
+        self.strategy = "All-In"
 
     def play(self, player):
         ### First player: Play high priority and min combination
