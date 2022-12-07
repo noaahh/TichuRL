@@ -165,6 +165,10 @@ class Tournament:
     def get_winner_team(self):
         return max(self.teams, key=lambda team: team.get_score())
 
+    # Get top three teams of tournament based on score
+    def get_top_three_teams(self):
+        return sorted(self.teams, key=lambda team: team.get_score(), reverse=True)[:3]
+
     def play(self):
         for pairing in tqdm(self.pairings):
             for _ in range(self.matches_per_pairing):
