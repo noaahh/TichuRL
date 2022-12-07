@@ -26,11 +26,6 @@ def find_z_alpha_over_2(confidence_level):
     else:
         raise ValueError(f"Confidence level {confidence_level} not supported")
 
-# calculate the t Alpha/2 (ta/2) value for a given confidence level, dynamically based on alpha given
-
-
-
-
 
 class Team:
     def __init__(self, agents, matches_per_pairing):
@@ -109,7 +104,7 @@ class Team:
         fig.show()
 
     # Confidence interval as tuple for the win probability against a given team with a given confidence level
-    def get_confidence_interval(self, against_team_id, confidence_level=.95):
+    def get_win_confidence_interval(self, against_team_id, confidence_level=.95):
         if against_team_id not in self.wins:
             return 0
 
@@ -130,7 +125,7 @@ class Team:
             if team == self.get_team_id():
                 continue
 
-            print(f"{team}\t\t{self.get_win_probability(team):.2f}\t\t\t{self.get_confidence_interval(team, confidence_level)}")
+            print(f"{team}\t\t{self.get_win_probability(team):.2f}\t\t\t{self.get_win_confidence_interval(team, confidence_level)}")
 
 
 class Pairing:
