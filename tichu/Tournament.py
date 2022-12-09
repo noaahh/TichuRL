@@ -1,11 +1,12 @@
 import math
+import pickle
 
-from plotly.subplots import make_subplots
 import plotly.graph_objects as go
-
+from plotly.subplots import make_subplots
 from tqdm.notebook import tqdm
 
 from tichu.TichuEnv import TichuEnv
+
 
 def binomial_distribution(n, p, k):
     return (math.factorial(n) / (math.factorial(k) * math.factorial(n - k))) * (p ** k) * ((1 - p) ** (n - k))
@@ -232,6 +233,27 @@ class Tournament:
     # Get all pairings of the tournament where the given team is involved in
     def get_pairings_for_team(self, team):
         return [p for p in self.pairings if team in p.teams]
+
+    # Save object to a file
+    def save(self, filename="tournament.tichu"):
+        try:
+            with open(filename, "wb") as f:
+                pickle.dump(self, f)
+                print("Saved tournament to file " + filename)
+        except Exception as e:
+            print(e)
+
+    # Load object from a file and return it in a static method
+    @staticmethod
+    def load(filename="tournament.tichu"):
+        try:
+            with open(filename, "rb") as f:
+                print("Loading tournament from file...")
+                return pickle.load(f)
+        except Exception as e:
+            print("Could not load tournament from file")
+
+        return None
 
     @staticmethod
     def update_pairing_stats(pairing, game_points, rounds_to_win):
