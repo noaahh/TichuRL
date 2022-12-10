@@ -97,10 +97,11 @@ class Team:
     def get_overall_win_probability(self):
         return sum(self.wins.values()) / (self.matches_per_pairing * len(self.wins))
 
-    # Plot win probability and draw probability against each team as stacked bar plots
-    # use two colors for win and draw probability
+    # Plot win probability and draw probability against each team as bar plots in one plot
     # make sure that the y starts at 0 and ends at 1
-    def plot_win_and_draw_probability_against_teams(self, against_teams):
+    # Add the error bars for the win probability and draw probability
+    # Add labels above the error bars with the win probability
+    def plot_win_and_draw_probability_against_teams_with_error_bars(self, against_teams, confidence_level):
         fig = make_subplots(rows=1, cols=1)
 
         x = list(k.get_team_id() for k in against_teams if k.get_team_id() != self.get_team_id())
@@ -110,9 +111,25 @@ class Team:
         # Sort by win probability
         x, y, y2 = zip(*sorted(zip(x, y, y2), key=lambda item: item[1], reverse=True))
 
-        fig.add_trace(go.Bar(x=x, y=y, name="Win probability", marker_color="green"))
-        fig.add_trace(go.Bar(x=x, y=y2, name="Draw probability", marker_color="orange"))
-        fig.update_layout(title_text="Win and draw probability against each team for " + self.get_team_id())
+        # Add labels to each bar
+        labels = [f"{round(y[i] * 100, 2)}%" for i in range(len(y))]
+        labels2 = [f"{round(y2[i] * 100, 2)}%" for i in range(len(y2))]
+
+        # Calculate error bars
+        z = get_z_score(confidence_level)
+        n = self.matches_per_pairing
+
+        # Get error by using confidence interval function and subtracting the win probability
+        error_y = [self.get_win_confidence_interval(team, confidence_level)[1] - self.get_win_probability(team) for team in x]
+        error_y2 = [self.get_draw_confidence_interval(team, confidence_level)[1] - self.get_draw_probability(team) for team in x]
+
+        fig.add_trace(go.Bar(x=x, y=y, error_y=dict(type="data", array=error_y), text=labels, textposition="auto", name="Win probability"))
+        fig.add_trace(go.Bar(x=x, y=y2, error_y=dict(type="data", array=error_y2), text=labels2, textposition="auto", name="Draw probability"))
+
+        fig.update_layout(title_text="Win and draw probability against team for " + self.get_team_id())
+
+        # Add used confidence level to title
+        fig.update_layout(title_text=fig.layout.title.text + f" (confidence level: {confidence_level})")
 
         # Set y axis to start at 0 and end at 1
         fig.update_yaxes(range=[0, 1])
@@ -130,9 +147,12 @@ class Team:
             x = list(range(1, 22))
             y = [poison_distribution(sum(rounds) / len(rounds), k) for k in x]
 
-            fig.add_trace(go.Bar(x=x, y=y, name=team))
+            # Add labels to each bar
+            labels = [f"{round(y[i] * 100, 2)}%" for i in range(len(y))]
+            fig.add_trace(go.Bar(x=x + [0], y=y + [0], text=labels, textposition="auto", name=team))
 
-        fig.update_layout(title_text="Rounds to win against each team for " + self.get_team_id())
+
+        fig.update_layout(title_text="Rounds to win against team for " + self.get_team_id())
         fig.show()
 
     # Confidence interval as tuple for the win probability against a given team with a given confidence level
@@ -146,8 +166,22 @@ class Team:
 
         interval = p - z_score * math.sqrt(p * (1 - p) / n), p + z_score * math.sqrt(p * (1 - p) / n)
 
-        # Round to 3 decimal places and return
-        return round(interval[0], 3), round(interval[1], 3)
+        # Round to 5 decimal places and return
+        return round(interval[0], 5), round(interval[1], 5)
+
+    # Confidence interval as tuple for the draw probability against a given team with a given confidence level
+    def get_draw_confidence_interval(self, against_team_id, confidence_level=.95):
+        if against_team_id not in self.draws:
+            return 0
+
+        p = self.get_draw_probability(against_team_id)
+        n = self.matches_per_pairing
+        z_score = get_z_score(confidence_level)
+
+        interval = p - z_score * math.sqrt(p * (1 - p) / n), p + z_score * math.sqrt(p * (1 - p) / n)
+
+        # Round to 5 decimal places and return
+        return round(interval[0], 5), round(interval[1], 5)
 
     # Confidence interval for the average rounds to win against a given team with a given confidence level
     # TODO: does this make sense?
@@ -222,12 +256,17 @@ class Tournament:
         fig.update_layout(title_text="Cumulative score over time for each team")
         fig.show()
 
-    # Plot total final score for each team of the tournament as bar plots and order them by their final total score
+    # Plot total final score for each team of the tournament as bar plots and sort them by their final total score
     def plot_total_score(self):
         fig = go.Figure(data=[go.Bar(x=[team.get_team_id() for team in self.teams],
                                      y=[team.get_score() for team in self.teams])])
 
-        fig.update_layout(title_text="Total score for each team")
+        # Sort bars by total score
+        fig.update_layout(title_text="Total score for each team", xaxis={'categoryorder': 'total descending'})
+
+        # Add labels to bars with total score
+        fig.update_traces(text=[team.get_score() for team in self.teams], textposition='outside')
+
         fig.show()
 
     # Get all pairings of the tournament where the given team is involved in
