@@ -8,7 +8,6 @@ class Game:
     def __init__(self, env, num_players=4):
         self.num_players = num_players
         self.env = env
-
         self.rounds_played = 1
         self.rounds_played_per_player = {0: 0, 1: 0, 2: 0, 3: 0}
 
@@ -23,6 +22,10 @@ class Game:
         self.players = list()
         for i in range(self.num_players):
             player = Player(player_id=i)
+            if i == 0 or i == 2:
+                player.team = self.env.team_names[0]
+            else:
+                player.team = self.env.team_names[1]
             self.players.append(player)
 
         # Deal cards
@@ -41,6 +44,8 @@ class Game:
         for i in range(self.num_players):
             if self.players[i].hand.cards.count(Card('2', 'Club')) == 1:
                 self.first_player = i
+                self.env.positional_outcome[self.players[i].team] = 1
+                self.env.positional_outcome[self.players[(i + 1) % 4].team] = 0
 
         # Initialize round
         self.round = Round(self.num_players, self.first_player, self)

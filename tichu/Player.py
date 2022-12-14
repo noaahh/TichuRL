@@ -9,6 +9,7 @@ class Player:
         self.won_card = Cards()
         self.point = 0
         self.accumulated_points = []
+        self.team = None
 
     def show_hand(self):
         if self.hand.size == 0:

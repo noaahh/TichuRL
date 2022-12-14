@@ -4,7 +4,7 @@ import pickle
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from tqdm.notebook import tqdm
-
+import scipy.stats as stats
 from tichu.TichuEnv import TichuEnv
 
 
@@ -40,6 +40,7 @@ class Team:
         self.scores = []
         self.wins = {}
         self.draws = {}
+        self.first_to_play = {}
         self.rounds_for_win = {}
 
     def __str__(self):
@@ -78,6 +79,12 @@ class Team:
 
         self.draws[against_team.get_team_id()] += 1
 
+    def add_first_to_play(self, against_team, outcome):
+        if against_team.get_team_id() not in self.first_to_play:
+            self.first_to_play[against_team.get_team_id()] = {"win": 0, "draw": 0, "loss": 0}
+
+        self.first_to_play[against_team.get_team_id()][outcome] += 1
+
     # Get win probability against a given team
     def get_win_probability(self, against_team_id):
         if against_team_id not in self.wins:
@@ -96,6 +103,7 @@ class Team:
     # Get overall win probability
     def get_overall_win_probability(self):
         return sum(self.wins.values()) / (self.matches_per_pairing * len(self.wins))
+
 
     # Plot win probability and draw probability against each team as bar plots in one plot
     # make sure that the y starts at 0 and ends at 1
@@ -231,8 +239,9 @@ class Tournament:
             for _ in range(self.matches_per_pairing):
                 pairing_env = TichuEnv()
                 pairing_env.set_agents(pairing.get_agent_list())
-                game_points, accumulated_points_per_round, rounds_to_win = pairing_env.run()
-                self.update_pairing_stats(pairing, game_points, rounds_to_win)
+                pairing_env.set_team_names([pairing.teams[0].__str__(), pairing.teams[1].__str__()])
+                game_points, accumulated_points_per_round, rounds_to_win, positional_outcome = pairing_env.run()
+                self.update_pairing_stats(pairing, game_points, rounds_to_win, positional_outcome)
 
     # Get top three teams based on final score
     def get_top_three_teams(self):
@@ -295,7 +304,7 @@ class Tournament:
         return None
 
     @staticmethod
-    def update_pairing_stats(pairing, game_points, rounds_to_win):
+    def update_pairing_stats(pairing, game_points, rounds_to_win, positional_outcome):
         team_a = pairing.teams[0]
         team_b = pairing.teams[1]
 
@@ -319,6 +328,11 @@ class Tournament:
             one_two_team.add_win(other_team)
             one_two_team.add_rounds_for_win(rounds_to_win, other_team)
 
+            if positional_outcome[one_two_team.__str__()] == 1:
+                one_two_team.add_first_to_play(other_team, "win")
+            else:
+                other_team.add_first_to_play(one_two_team, "loss")
+
             one_two_team.scores.append(3)
             other_team.scores.append(0)
 
@@ -337,21 +351,38 @@ class Tournament:
 
                 team_a.scores.append(2)
                 team_b.scores.append(0)
+                
+                if positional_outcome[team_a.__str__()] == 1:
+                    team_a.add_first_to_play(team_b, "win")
+                else: 
+                    team_b.add_first_to_play(team_a, "loss")
+                    
             elif team_a_points < team_b_points:
                 pairing.scoring_table[team_b.__str__()]["2"] += 1
                 pairing.scoring_table[team_a.__str__()]["0"] += 1
 
                 team_b.add_win(team_a)
+           
                 team_b.add_rounds_for_win(rounds_to_win, team_a)
 
                 team_b.scores.append(2)
                 team_a.scores.append(0)
 
+                if positional_outcome[team_b.__str__()] == 1:
+                    team_b.add_first_to_play(team_a, "win")
+                else: 
+                    team_a.add_first_to_play(team_b, "loss")
+                    
             # Draw
             elif team_a_points == team_b_points:
                 team_b.add_draw(team_a)
                 team_a.add_draw(team_b)
-
+                
+                if positional_outcome[team_b.__str__()] == 1:
+                    team_b.add_first_to_play(team_a, "draw")
+                else: 
+                    team_a.add_first_to_play(team_b, "draw")
+                    
                 for team in pairing.teams:
                     pairing.scoring_table[team.__str__()]["1"] += 1
                     team.scores.append(1)
@@ -383,3 +414,19 @@ class Tournament:
     def get_rounds_to_win(self, team_a_id, team_b_id):
         team_a = self.get_team(team_a_id)
         return team_a.rounds_for_win[team_b_id]
+
+# do chi-squared test to check if starting first has an impact on the outcome of the game
+# provided a tournament and two team ids to compare
+# use stats.chi2_contingency to get the p-value
+def chi_squared_test(tournament, team_a_id, team_b_id):
+    team_a = tournament.get_team(team_a_id)
+    team_b = tournament.get_team(team_b_id)
+
+    team_a_first_to_play = team_a.first_to_play[team_b_id]
+    team_b_first_to_play = team_b.first_to_play[team_a_id]
+
+    # 2x2 contingency table
+    table = [[team_a_first_to_play["win"], team_a_first_to_play["loss"]],
+             [team_b_first_to_play["win"], team_b_first_to_play["loss"]]]
+
+    return stats.chi2_contingency(table)

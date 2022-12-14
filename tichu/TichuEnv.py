@@ -11,9 +11,11 @@ class TichuEnv:
         self.verbose = verbose
         self.game = Game(self)
         self.player_num = self.game.get_player_num()
+        self.positional_outcome = {}
         self.points = np.zeros(4)
         self.state_shape = [1, 40]
         self.action_num = 8192
+        self.team_names = []
 
         self.rounds_to_win = None
         self.timestep = 0
@@ -63,7 +65,7 @@ class TichuEnv:
             for i in self.game.players:
                 print(f"History for {i.player_id}: {i.accumulated_points}")
 
-        return game_points, [p.accumulated_points for p in self.game.players], self.rounds_to_win
+        return game_points, [p.accumulated_points for p in self.game.players], self.rounds_to_win, self.positional_outcome
 
     def is_over(self):
         return self.game.is_over()
@@ -77,3 +79,6 @@ class TichuEnv:
 
     def get_state(self, player_id):
         return self.game.get_active_player(player_id)
+
+    def set_team_names(self, param):
+        self.team_names = param
