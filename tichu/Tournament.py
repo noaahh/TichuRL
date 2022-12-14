@@ -59,7 +59,7 @@ class Team:
 
     # Add rounds to win in dictionary against a given team
     def add_rounds_for_win(self, rounds, against_team):
-        if against_team not in self.rounds_for_win:
+        if against_team.get_team_id() not in self.rounds_for_win:
             self.rounds_for_win[against_team.get_team_id()] = []
 
         self.rounds_for_win[against_team.get_team_id()].append(rounds)
@@ -158,7 +158,7 @@ class Team:
     # Confidence interval as tuple for the win probability against a given team with a given confidence level
     def get_win_confidence_interval(self, against_team_id, confidence_level=.95):
         if against_team_id not in self.wins:
-            return 0
+            return 0,0
 
         p = self.get_win_probability(against_team_id)
         n = self.matches_per_pairing
@@ -172,7 +172,7 @@ class Team:
     # Confidence interval as tuple for the draw probability against a given team with a given confidence level
     def get_draw_confidence_interval(self, against_team_id, confidence_level=.95):
         if against_team_id not in self.draws:
-            return 0
+            return 0, 0
 
         p = self.get_draw_probability(against_team_id)
         n = self.matches_per_pairing
@@ -187,7 +187,7 @@ class Team:
     # TODO: does this make sense?
     def get_rounds_for_win_confidence_interval(self, against_team_id, confidence_level=.95):
         if against_team_id not in self.rounds_for_win:
-            return 0
+            return 0, 0
 
         x = sum(self.rounds_for_win[against_team_id]) / len(self.rounds_for_win[against_team_id])
         n = len(self.rounds_for_win[against_team_id])
@@ -379,3 +379,7 @@ class Tournament:
             teams.append(Team([agents[i], agents[i]], matches_per_pairing))
 
         return teams
+
+    def get_rounds_to_win(self, team_a_id, team_b_id):
+        team_a = self.get_team(team_a_id)
+        return team_a.rounds_for_win[team_b_id]
