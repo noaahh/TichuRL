@@ -1,6 +1,7 @@
 import math
 import pickle
 
+import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from tqdm.notebook import tqdm
@@ -415,18 +416,3 @@ class Tournament:
         team_a = self.get_team(team_a_id)
         return team_a.rounds_for_win[team_b_id]
 
-# do chi-squared test to check if starting first has an impact on the outcome of the game
-# provided a tournament and two team ids to compare
-# use stats.chi2_contingency to get the p-value
-def chi_squared_test(tournament, team_a_id, team_b_id):
-    team_a = tournament.get_team(team_a_id)
-    team_b = tournament.get_team(team_b_id)
-
-    team_a_first_to_play = team_a.first_to_play[team_b_id]
-    team_b_first_to_play = team_b.first_to_play[team_a_id]
-
-    # 2x2 contingency table
-    table = [[team_a_first_to_play["win"], team_a_first_to_play["loss"]],
-             [team_b_first_to_play["win"], team_b_first_to_play["loss"]]]
-
-    return stats.chi2_contingency(table)
