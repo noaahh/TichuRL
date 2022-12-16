@@ -193,7 +193,6 @@ class Team:
         return round(interval[0], 5), round(interval[1], 5)
 
     # Confidence interval for the average rounds to win against a given team with a given confidence level
-    # TODO: does this make sense?
     def get_rounds_for_win_confidence_interval(self, against_team_id, confidence_level=.95):
         if against_team_id not in self.rounds_for_win:
             return 0, 0
@@ -396,7 +395,7 @@ class Tournament:
             for j in range(i + 1, len(teams)):
                 pairs.append(Pairing([teams[i], teams[j]]))
 
-            pairs.append(Pairing([teams[i], teams[i]]))
+            # pairs.append(Pairing([teams[i], teams[i]]))
 
         return pairs
 
