@@ -73,7 +73,7 @@ class Tournament:
         fig.update_layout(title_text="Total score for each team", xaxis={'categoryorder': 'total descending'})
 
         # Add labels to bars with total score
-        fig.update_traces(text=[team.get_score() for team in self.teams], textposition='outside')
+        fig.update_traces(text=[team.get_score() for team in self.teams], textposition='inside')
 
         fig.show()
 
