@@ -184,7 +184,7 @@ class Team:
             labels = [f"{round(y[i] * 100, 2)}%" for i in range(len(y))]
             fig.add_trace(go.Bar(x=x + [0], y=y + [0], text=labels, textposition="auto", name=team))
 
-        fig.update_layout(title_text="Rounds to win against team for " + self.get_team_id())
+        fig.update_layout(title_text="Rounds needed against team in case of win for team " + self.get_team_id())
         fig.show()
 
     def get_win_confidence_interval(self, against_team_id, confidence_level=.95):
