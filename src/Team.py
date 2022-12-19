@@ -20,6 +20,83 @@ class Team:
         self.second_to_play = {}
         self.rounds_for_win = {}
 
+    def get_total_games_played_first_second(self, against_team_id):
+        """
+        Get total number of games played when starting first or second against a given team
+        :param against_team_id: team id
+        :return: total number of games played
+        """
+        if against_team_id not in self.first_to_play or against_team_id not in self.second_to_play:
+            return (0, 0), (0, 0)
+
+        return self.first_to_play[against_team_id]['win'] + self.first_to_play[against_team_id]['loss'] + self.first_to_play[against_team_id]['draw'], \
+               self.second_to_play[against_team_id]['win'] + self.second_to_play[against_team_id]['loss'] + self.second_to_play[against_team_id]['draw']
+
+    def get_win_probability_first_second(self, against_team_id):
+        """
+        Get the win probability when starting first and when starting second against a given team
+        :param against_team_id: team id
+        :return: win probability when starting first and when starting second
+        """
+        if against_team_id not in self.wins:
+            return (0, 0), (0, 0)
+
+        first_to_play = self.first_to_play[against_team_id]
+        second_to_play = self.second_to_play[against_team_id]
+
+        n_first, n_second = self.get_total_games_played_first_second(against_team_id)
+
+        return first_to_play["win"] / n_first, second_to_play["win"] / n_second
+
+
+    def get_draw_probability_first_second(self, against_team_id):
+        """
+        Get the draw probability when starting first and when starting second against a given team
+        :param against_team_id: team id
+        :return: draw probability when starting first and when starting second
+        """
+        if against_team_id not in self.first_to_play or against_team_id not in self.second_to_play:
+            return (0, 0), (0, 0)
+
+        first_to_play = self.first_to_play[against_team_id]
+        second_to_play = self.second_to_play[against_team_id]
+
+        n_first, n_second = self.get_total_games_played_first_second(against_team_id)
+
+        return first_to_play["draw"] / n_first, second_to_play["draw"] / n_second
+
+    def get_win_confidence_interval_first_second(self, against_team_id, confidence_level=.95):
+        """
+        Get the confidence interval for the win probability when starting first or second against a given team with a given confidence level
+        :param against_team_id: team id
+        :param confidence_level: confidence level
+        :return: confidence interval
+        """
+        if against_team_id not in self.wins:
+            return (0, 0), (0, 0)
+
+        p = self.get_win_probability_first_second(against_team_id)
+        n_first, n_second = self.get_total_games_played_first_second(against_team_id)
+
+        # Calculate the confidence interval
+        return get_confidence_interval_probability(p[0], n_first, confidence_level), get_confidence_interval_probability(p[1], n_second, confidence_level)
+
+    def get_draw_confidence_interval_first_second(self, against_team_id, confidence_level=.95):
+        """
+        Get the confidence interval for the draw probability when starting first or second against a given team with a given confidence level
+        :param against_team_id: team id
+        :param confidence_level: confidence level
+        :return: confidence interval
+        """
+        if against_team_id not in self.draws:
+            return (0, 0), (0, 0)
+
+        p = self.get_draw_probability_first_second(against_team_id)
+        n_first, n_second = self.get_total_games_played_first_second(against_team_id)
+
+        # Calculate the confidence interval
+        return get_confidence_interval_probability(p[0], n_first, confidence_level), get_confidence_interval_probability(p[1], n_second, confidence_level)
+
     def __str__(self):
         return self.get_team_id()
 
@@ -121,7 +198,7 @@ class Team:
         """
         return sum(self.wins.values()) / (self.matches_per_pairing * len(self.wins))
 
-    def plot_win_and_draw_probability_against_teams_with_error_bars(self, against_teams, confidence_level):
+    def plot_probabilities_simple(self, against_teams, confidence_level):
         """
         Plot the win and draw probability against a given team with error bars
         :param against_teams: teams
@@ -161,6 +238,65 @@ class Team:
 
         # Set y axis to start at 0 and end at 1
         fig.update_yaxes(range=[0, 1])
+
+        fig.show()
+
+    def plot_probabilities_advanced(self, against_teams, confidence_level=0.95):
+        """
+        Plot the win and draw probability against a given team with error bars
+        :param against_teams: teams to plot against
+        :param confidence_level: confidence level
+        :return: None
+        """
+        against_teams_ids = [team.get_team_id() for team in against_teams if team.get_team_id() != self.get_team_id()]
+
+        # get win probabilities
+        win_probabilities = [self.get_win_probability(team_id) for team_id in against_teams_ids]
+        win_probabilities_first = [self.get_win_probability_first_second(team_id)[0] for team_id in against_teams_ids]
+        win_probabilities_second = [self.get_win_probability_first_second(team_id)[1] for team_id in against_teams_ids]
+
+        # get draw probabilities
+        draw_probabilities = [self.get_draw_probability(team_id) for team_id in against_teams_ids]
+        draw_probabilities_first = [self.get_draw_probability_first_second(team_id)[0] for team_id in against_teams_ids]
+        draw_probabilities_second = [self.get_draw_probability_first_second(team_id)[1] for team_id in against_teams_ids]
+
+        # get confidence intervals for win probabilities and draw probabilities
+        win_confidence_intervals = [self.get_win_confidence_interval(team_id, confidence_level) for team_id in against_teams_ids]
+        draw_confidence_intervals = [self.get_draw_confidence_interval(team_id, confidence_level) for team_id in against_teams_ids]
+
+        # get confidence intervals for win probabilities when starting first and second
+        win_confidence_intervals_first = [self.get_win_confidence_interval_first_second(team_id, confidence_level)[0] for team_id in against_teams_ids]
+        win_confidence_intervals_second = [self.get_win_confidence_interval_first_second(team_id, confidence_level)[1] for team_id in against_teams_ids]
+
+        # get confidence intervals for draw probabilities when starting first and second
+        draw_confidence_intervals_first = [self.get_draw_confidence_interval_first_second(team_id, confidence_level)[0] for team_id in against_teams_ids]
+        draw_confidence_intervals_second = [self.get_draw_confidence_interval_first_second(team_id, confidence_level)[1] for team_id in against_teams_ids]
+
+        # plot
+        fig = make_subplots(rows=1, cols=3, subplot_titles=("Overall", "Starting first", "Starting second"))
+
+        # Add traces with names and error bars
+        fig.add_trace(go.Bar(x=against_teams_ids, y=win_probabilities, error_y=dict(type="data", array=[win_confidence_intervals[i][1] - win_probabilities[i] for i in range(len(win_confidence_intervals))]), name="Win probability"), row=1, col=1)
+        fig.add_trace(go.Bar(x=against_teams_ids, y=win_probabilities_first, error_y=dict(type="data", array=[win_confidence_intervals_first[i][1] - win_probabilities_first[i] for i in range(len(win_confidence_intervals_first))]), name="Win probability when starting first"), row=1, col=2)
+        fig.add_trace(go.Bar(x=against_teams_ids, y=win_probabilities_second, error_y=dict(type="data", array=[win_confidence_intervals_second[i][1] - win_probabilities_second[i] for i in range(len(win_confidence_intervals_second))]), name="Win probability when starting second"), row=1, col=3)
+
+        # Add draw probabilities
+        fig.add_trace(go.Bar(x=against_teams_ids, y=draw_probabilities, error_y=dict(type="data", array=[draw_confidence_intervals[i][1] - draw_probabilities[i] for i in range(len(draw_confidence_intervals))]), name="Draw probability"), row=1, col=1)
+        fig.add_trace(go.Bar(x=against_teams_ids, y=draw_probabilities_first, error_y=dict(type="data", array=[draw_confidence_intervals_first[i][1] - draw_probabilities_first[i] for i in range(len(draw_confidence_intervals_first))]), name="Draw probability when starting first"), row=1, col=2)
+        fig.add_trace(go.Bar(x=against_teams_ids, y=draw_probabilities_second, error_y=dict(type="data", array=[draw_confidence_intervals_second[i][1] - draw_probabilities_second[i] for i in range(len(draw_confidence_intervals_second))]), name="Draw probability when starting second"), row=1, col=3)
+
+        # Add used confidence level to title
+        fig.update_layout(title_text="Probabilities against team for " + self.get_team_id() + f" (confidence level: {confidence_level})", showlegend=False)
+
+        # Set y-axes limits to 1
+        fig.update_yaxes(range=[0, 1], row=1, col=1)
+        fig.update_yaxes(range=[0, 1], row=1, col=2)
+        fig.update_yaxes(range=[0, 1], row=1, col=3)
+
+        # Add labels to all bars. Round to 3 decimals
+        fig.update_traces(texttemplate='%{y:.3f}', textposition='outside', row=1, col=1)
+        fig.update_traces(texttemplate='%{y:.3f}', textposition='outside', row=1, col=2)
+        fig.update_traces(texttemplate='%{y:.3f}', textposition='outside', row=1, col=3)
 
         fig.show()
 
