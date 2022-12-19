@@ -5,7 +5,7 @@ if __name__ == "__main__":
     # Print confidence intervals
     print("Confidence intervals:")
     print(f"Probability: {get_confidence_interval_probability(0.5, 1000)}")
-    print(f"Expected value: {get_confidence_interval_expected_value(0.5, 1000)}")
+    print(f"Expected value: {get_confidence_interval_expected_value(7.4, 1000)}")
 
     # Print poison distribution
     print("Poison distribution:")

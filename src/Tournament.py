@@ -138,8 +138,10 @@ class Tournament:
 
             if positional_outcome[one_two_team.__str__()] == 1:
                 one_two_team.add_first_to_play(other_team, "win")
+                other_team.add_second_to_play(one_two_team, "loss")
             else:
                 other_team.add_first_to_play(one_two_team, "loss")
+                one_two_team.add_second_to_play(one_two_team, "win")
 
             one_two_team.scores.append(3)
             other_team.scores.append(0)
@@ -162,8 +164,10 @@ class Tournament:
 
                 if positional_outcome[team_a.__str__()] == 1:
                     team_a.add_first_to_play(team_b, "win")
+                    team_b.add_second_to_play(team_a, "loss")
                 else:
                     team_b.add_first_to_play(team_a, "loss")
+                    team_a.add_second_to_play(team_b, "win")
 
             # Win for team B
             elif team_a_points < team_b_points:
@@ -179,8 +183,10 @@ class Tournament:
 
                 if positional_outcome[team_b.__str__()] == 1:
                     team_b.add_first_to_play(team_a, "win")
+                    team_a.add_second_to_play(team_b, "loss")
                 else:
                     team_a.add_first_to_play(team_b, "loss")
+                    team_b.add_second_to_play(team_a, "win")
 
             # Draw
             elif team_a_points == team_b_points:
@@ -189,8 +195,10 @@ class Tournament:
 
                 if positional_outcome[team_b.__str__()] == 1:
                     team_b.add_first_to_play(team_a, "draw")
+                    team_a.add_second_to_play(team_b, "draw")
                 else:
                     team_a.add_first_to_play(team_b, "draw")
+                    team_b.add_second_to_play(team_a, "draw")
 
                 for team in pairing.teams:
                     pairing.scoring_table[team.__str__()]["1"] += 1

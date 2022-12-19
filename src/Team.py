@@ -17,6 +17,7 @@ class Team:
         self.wins = {}
         self.draws = {}
         self.first_to_play = {}
+        self.second_to_play = {}
         self.rounds_for_win = {}
 
     def __str__(self):
@@ -79,6 +80,17 @@ class Team:
 
         self.first_to_play[against_team.get_team_id()][outcome] += 1
 
+    def add_second_to_play(self, against_team, outcome):
+        """
+        Add the second to play for a given team
+        :param against_team: team
+        :param outcome: outcome
+        :return: None
+        """
+        if against_team.get_team_id() not in self.second_to_play:
+            self.second_to_play[against_team.get_team_id()] = {"win": 0, "draw": 0, "loss": 0}
+
+        self.second_to_play[against_team.get_team_id()][outcome] += 1
     def get_win_probability(self, against_team_id):
         """
         Get the probability of a win against a given team

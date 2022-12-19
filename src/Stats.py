@@ -44,7 +44,8 @@ def get_confidence_interval_expected_value(x, n, confidence_level=.95):
     :return: confidence interval
     """
     # Calculate the confidence interval
-    interval = stats.norm.interval(confidence_level, loc=x, scale=math.sqrt(x / n))
+    interval = stats.poisson.interval(confidence_level, mu=x, loc=x)
+    print(interval)
 
     # Round to 5 decimal places and return
     return round(interval[0], 5), round(interval[1], 5)
