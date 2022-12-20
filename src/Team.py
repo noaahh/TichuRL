@@ -39,7 +39,7 @@ class Team:
         :return: win probability when starting first and when starting second
         """
         if against_team_id not in self.wins:
-            return (0, 0), (0, 0)
+            return 0, 0
 
         first_to_play = self.first_to_play[against_team_id]
         second_to_play = self.second_to_play[against_team_id]
@@ -56,7 +56,7 @@ class Team:
         :return: draw probability when starting first and when starting second
         """
         if against_team_id not in self.first_to_play or against_team_id not in self.second_to_play:
-            return (0, 0), (0, 0)
+            return 0, 0
 
         first_to_play = self.first_to_play[against_team_id]
         second_to_play = self.second_to_play[against_team_id]
