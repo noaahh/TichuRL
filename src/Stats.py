@@ -35,17 +35,16 @@ def get_confidence_interval_probability(p, n, confidence_level=.95):
     # Round to 5 decimal places and return
     return round(interval[0], 5), round(interval[1], 5)
 
-def get_confidence_interval_expected_value(x, n, confidence_level=.95):
+def get_confidence_interval_expected_value_poisson(x, n, confidence_level=.95):
     """
-    Get the confidence interval for the expected value of a random variable with a given confidence level. Assuming poisson distribution.
+    Get the confidence interval for the expected value of a random variable with a given confidence level. Assuming poisson distribution
     :param x: expected value (Lamda of poisson distribution)
     :param n: number of trials
     :param confidence_level: confidence level
     :return: confidence interval
     """
     # Calculate the confidence interval
-    interval = stats.poisson.interval(confidence_level, mu=x, loc=x)
-    print(interval)
+    interval = stats.norm.interval(confidence_level, loc=x, scale=math.sqrt(x / n))
 
     # Round to 5 decimal places and return
     return round(interval[0], 5), round(interval[1], 5)
