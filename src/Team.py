@@ -169,6 +169,7 @@ class Team:
             self.second_to_play[against_team.get_team_id()] = {"win": 0, "draw": 0, "loss": 0}
 
         self.second_to_play[against_team.get_team_id()][outcome] += 1
+
     def get_win_probability(self, against_team_id):
         """
         Get the probability of a win against a given team
@@ -238,7 +239,7 @@ class Team:
         fig.update_layout(title_text=fig.layout.title.text + f" (confidence level: {confidence_level})")
 
         # Set y axis to start at 0 and end at 1
-        fig.update_yaxes(range=[0, 1])
+        fig.update_yaxes(range=[0, 1], title_text="Probability")
 
         fig.show()
 
@@ -287,10 +288,10 @@ class Team:
         fig.add_trace(go.Bar(x=against_teams_ids, y=draw_probabilities_second, error_y=dict(type="data", array=[draw_confidence_intervals_second[i][1] - draw_probabilities_second[i] for i in range(len(draw_confidence_intervals_second))]), name="Draw probability when starting second"), row=1, col=3)
 
         # Add used confidence level to title
-        fig.update_layout(title_text="Probabilities against team for " + self.get_team_id() + f" (confidence level: {confidence_level})", showlegend=False)
+        fig.update_layout(title_text="Win and draw probabilities against team for " + self.get_team_id() + f" (confidence level: {confidence_level})", showlegend=False)
 
         # Set y-axes limits to 1
-        fig.update_yaxes(range=[0, 1], row=1, col=1)
+        fig.update_yaxes(range=[0, 1], row=1, col=1, title_text="Probability")
         fig.update_yaxes(range=[0, 1], row=1, col=2)
         fig.update_yaxes(range=[0, 1], row=1, col=3)
 
@@ -322,6 +323,10 @@ class Team:
             fig.add_trace(go.Bar(x=x + [0], y=y + [0], text=labels, textposition="auto", name=team))
 
         fig.update_layout(title_text="Rounds needed against team in case of win for team " + self.get_team_id())
+
+        fig.update_xaxes(title_text="Rounds")
+        fig.update_yaxes(title_text="Probability")
+
         fig.show()
 
     def get_win_confidence_interval(self, against_team_id, confidence_level=.95):
