@@ -1,8 +1,9 @@
 from plotly import graph_objects as go
 from plotly.subplots import make_subplots
 
-from src.Stats import poison_distribution, get_confidence_interval_expected_value, \
-    get_confidence_interval_probability
+from src.Stats import poison_distribution, \
+    get_confidence_interval_probability, get_confidence_interval_expected_value_poisson
+
 
 class Team:
     def __init__(self, agents, matches_per_pairing):
@@ -369,4 +370,4 @@ class Team:
         n = len(self.rounds_for_win[against_team_id])
 
         # Calculate the confidence interval
-        return get_confidence_interval_expected_value(x, n, confidence_level)
+        return get_confidence_interval_expected_value_poisson(x, n, confidence_level)
