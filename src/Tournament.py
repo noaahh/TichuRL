@@ -59,6 +59,9 @@ class Tournament:
                                      name=team.get_team_id()))
 
         fig.update_layout(title_text="Cumulative score over time for each team")
+        fig.update_xaxes(title_text="Number of matches played")
+        fig.update_yaxes(title_text="Cumulative score")
+
         fig.show()
 
     def plot_total_score(self):
@@ -74,6 +77,9 @@ class Tournament:
 
         # Add labels to bars with total score
         fig.update_traces(text=[team.get_score() for team in self.teams], textposition='inside')
+
+        fig.update_xaxes(title_text="Team")
+        fig.update_yaxes(title_text="Total score")
 
         fig.show()
 
@@ -141,7 +147,7 @@ class Tournament:
                 other_team.add_second_to_play(one_two_team, "loss")
             else:
                 other_team.add_first_to_play(one_two_team, "loss")
-                one_two_team.add_second_to_play(one_two_team, "win")
+                one_two_team.add_second_to_play(other_team, "win")
 
             one_two_team.scores.append(3)
             other_team.scores.append(0)
